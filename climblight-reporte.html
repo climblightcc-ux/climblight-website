@@ -81,6 +81,18 @@ textarea{resize:none;min-height:80px}
         <label>Marca con la que trabajaste *</label>
         <input type="text" id="f-marca" placeholder="Nombre de la marca">
       </div>
+      <div class="field">
+        <label>Tipo de campaña *</label>
+        <select id="f-tipo" onchange="toggleMonto()">
+          <option value="">Selecciona</option>
+          <option value="pagada">Pagada</option>
+          <option value="colaboracion">Colaboración (producto / experiencia)</option>
+        </select>
+      </div>
+      <div class="field" id="monto-field" style="display:none">
+        <label>¿Cuánto te pagaron? (MXN) *</label>
+        <input type="number" id="f-monto" placeholder="Ej. 3500">
+      </div>
       <div class="form-grid">
         <div class="field" style="margin-bottom:0">
           <label>Vistas totales *</label>
@@ -153,6 +165,11 @@ textarea{resize:none;min-height:80px}
   let campanaId = null;
   let calificacion = 0;
 
+  function toggleMonto() {
+    const tipo = document.getElementById('f-tipo').value;
+    document.getElementById('monto-field').style.display = tipo === 'pagada' ? 'flex' : 'none';
+  }
+
   function setStar(n) {
     calificacion = n;
     document.querySelectorAll('.star').forEach((s, i) => {
@@ -223,8 +240,10 @@ textarea{resize:none;min-height:80px}
 
     const marca = document.getElementById('f-marca').value.trim();
     const vistas = document.getElementById('f-vistas').value;
+    const tipo = document.getElementById('f-tipo').value;
+    const monto = document.getElementById('f-monto').value;
 
-    if (!marca || !vistas) {
+    if (!marca || !vistas || !tipo || (tipo === 'pagada' && !monto)) {
       const err = document.getElementById('error-msg');
       err.textContent = 'Completa los campos obligatorios (*)';
       err.style.display = 'block';
@@ -246,6 +265,8 @@ textarea{resize:none;min-height:80px}
         },
         body: JSON.stringify({
           marca,
+          tipo,
+          monto: tipo === 'pagada' ? parseFloat(monto) : null,
           vistas: parseInt(vistas),
           engagement: document.getElementById('f-engagement').value || null,
           descripcion: document.getElementById('f-descripcion').value.trim() || null,
