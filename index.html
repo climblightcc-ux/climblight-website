@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climblight — Únete como Creador</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:     #1B3A5C;
+  --navy-d:   #122840;
+  --navy-l:   #254E7A;
+  --navy-bg:  #EFF4FA;
+  --white:    #FFFFFF;
+  --off:      #F8F9FA;
+  --ink:      #111827;
+  --gray:     #6B7280;
+  --gray-l:   #9CA3AF;
+  --border:   #E5E7EB;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1080px;margin:0 auto;padding:0 40px;height:68px;display:flex;align-items:center;justify-content:space-between}
+.logo-text{font-family:'DM Serif Display',serif;font-size:21px;color:var(--navy)}
+.nav-tabs{display:flex;gap:4px;background:var(--off);border-radius:100px;padding:4px}
+.nav-tab{padding:8px 18px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--gray);transition:all .2s;font-family:'DM Sans',sans-serif}
+.nav-tab.active{background:var(--navy);color:white}
+.nav-tab:hover:not(.active){color:var(--ink)}
+
+.view{display:none}
+.view.active{display:block}
+
+.hero{max-width:1080px;margin:0 auto;padding:80px 40px 0}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.hero-eyebrow::before{content:'';width:28px;height:1.5px;background:var(--navy)}
+.hero-h1{font-family:'DM Serif Display',serif;font-size:clamp(44px,6vw,76px);font-weight:400;line-height:1;letter-spacing:-1.5px;color:var(--ink)}
+.hero-h1 em{font-style:italic;color:var(--navy)}
+.hero-tagline{font-size:clamp(15px,1.8vw,18px);font-weight:300;color:var(--gray);line-height:1.7;margin-top:20px;max-width:560px}
+.hero-tagline strong{color:var(--navy);font-weight:500}
+
+.divider{border:none;border-top:1px solid var(--border);max-width:1080px;margin:52px auto 0}
+
+.main{max-width:1080px;margin:0 auto;padding:52px 40px 80px;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+
+.left-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:var(--ink);margin-bottom:24px;letter-spacing:-.3px}
+.left-title em{color:var(--navy);font-style:italic}
+
+.benefit-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:16px;overflow:hidden;margin-bottom:32px}
+.benefit{background:var(--white);padding:18px 22px;display:flex;gap:16px;align-items:flex-start}
+.benefit-dot{width:6px;height:6px;border-radius:50%;background:var(--navy);flex-shrink:0;margin-top:8px}
+.benefit-body strong{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.benefit-body span{font-size:13px;color:var(--gray);line-height:1.55}
+
+.quote-box{background:var(--navy);border-radius:14px;padding:24px 26px}
+.quote-text{font-family:'DM Serif Display',serif;font-size:16px;font-style:italic;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:12px}
+.quote-author{font-size:11px;font-weight:500;color:rgba(255,255,255,0.45);letter-spacing:.06em;text-transform:uppercase}
+
+.form-card{background:var(--white);border:1.5px solid var(--border);border-radius:20px;padding:36px;box-shadow:0 4px 32px rgba(0,0,0,0.06)}
+.form-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;color:var(--ink);margin-bottom:4px;letter-spacing:-.3px}
+.form-sub{font-size:13px;color:var(--gray);margin-bottom:24px;line-height:1.5}
+
+.section-label{font-size:10px;font-weight:700;color:var(--gray-l);letter-spacing:.1em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.03em}
+input,select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;background:var(--off);color:var(--ink)}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);background:var(--white);box-shadow:0 0 0 3px rgba(27,58,92,0.08)}
+input::placeholder,textarea::placeholder{color:#D1D5DB}
+select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:var(--off)}
+textarea{resize:none;min-height:68px}
+
+.redes-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.red-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s;user-select:none;background:var(--off)}
+.red-item:hover{border-color:var(--navy-l)}
+.red-item.checked{border-color:var(--navy);background:var(--navy-bg)}
+.red-check{width:15px;height:15px;border-radius:4px;border:1.5px solid #D1D5DB;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.red-item.checked .red-check{background:var(--navy);border-color:var(--navy)}
+.red-check svg{display:none}
+.red-item.checked .red-check svg{display:block}
+.red-name{font-size:12px;color:var(--gray);font-weight:500}
+.red-item.checked .red-name{color:var(--navy);font-weight:600}
+
+.btn-submit{width:100%;padding:14px;background:var(--navy);color:var(--white);border:none;border-radius:100px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s,transform .1s;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{background:var(--navy-d)}
+.btn-submit:active{transform:scale(.99)}
+.btn-submit:disabled{background:var(--gray-l);cursor:not-allowed}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-submit.loading .spinner{display:block}
+.btn-submit.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.form-note{font-size:11px;color:var(--gray-l);text-align:center;margin-top:10px}
+
+.success-state{display:none;text-align:center;padding:32px 8px}
+.success-icon{width:68px;height:68px;background:var(--navy-bg);border:2px solid var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px}
+.success-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:10px}
+.success-sub{font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:20px}
+.success-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;background:var(--navy-bg);border:1px solid rgba(27,58,92,0.2);border-radius:100px;font-size:12px;font-weight:500;color:var(--navy)}
+
+.error-msg{font-size:12px;color:#DC2626;margin-top:8px;display:none;padding:10px 14px;background:#FEF2F2;border-radius:8px;border:1px solid #FECACA}
+
+/* CURSOS VIEW */
+.dias-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--off);border:1px solid var(--border);border-radius:14px;padding:6px;width:fit-content}
+.dia-tab{padding:9px 26px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--gray);font-family:'DM Sans',sans-serif;transition:all .2s}
+.dia-tab.active{background:var(--navy);color:white}
+.horarios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.horario-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
+.horario-card:hover{border-color:var(--navy-l)}
+.horario-card.selected{border-color:var(--navy);background:var(--navy-bg)}
+.hc-nivel{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:8px}
+.hc-hora{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink);margin-bottom:6px}
+.hc-nombre{font-size:12px;color:var(--gray);line-height:1.4}
+.hc-check{position:absolute;top:14px;right:14px;width:18px;height:18px;border-radius:50%;background:var(--navy);color:white;display:none;align-items:center;justify-content:center;font-size:10px}
+.horario-card.selected .hc-check{display:flex}
+
+footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-logo{font-family:'DM Serif Display',serif;font-size:15px;color:var(--gray-l)}
+.footer-copy{font-size:12px;color:var(--gray-l)}
+
+@media(max-width:780px){
+  .nav-inner,.hero,.main,footer{padding-left:20px;padding-right:20px}
+  .hero{padding-top:48px}
+  .main{grid-template-columns:1fr;gap:40px;padding-top:40px}
+  .form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo-text">Climblight</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchView('registro', this)">Únete a la red</button>
+      <button class="nav-tab" onclick="switchView('cursos', this)">Inscríbete a un curso</button>
+      <button class="nav-tab" onclick="switchView('aliados', this)">Marcas aliadas</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ VIEW: REGISTRO ═══════════ -->
+<div class="view active" id="view-registro">
+
+<section class="hero">
+  <div class="hero-eyebrow">Creadores de contenido · México</div>
+  <h1 class="hero-h1">
+    Únete a la red<br>
+    de creadores de<br>
+    <em>Climblight.</em>
+  </h1>
+  <p class="hero-tagline">
+    <strong>Formación gratuita, marcas reales.</strong>
+  </p>
+</section>
+
+<hr class="divider">
+
+<div class="main">
+
+  <div class="left">
+    <div class="benefit-list">
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>6 cursos gratuitos en vivo</strong>
+          <span>Desde identidad y nicho hasta negociar tu primer contrato. Jueves y sábados por Google Meet.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Acceso a marcas reales</strong>
+          <span>Tú crea — nosotros gestionamos la relación con la marca. Sin buscarlas, sin negociar solo.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Climblight Score</strong>
+          <span>Tu perfil verificado con formación y campañas reales. Las marcas lo consultan antes de elegirte.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Comunidad nacional</strong>
+          <span>Creadores en todo México compartiendo lo que funciona. Dejas de crear solo.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Primera campaña sin historial</strong>
+          <span>No pedimos seguidores. Pedimos compromiso. Nosotros ponemos la marca, tú pones las ganas.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div id="form-state">
+      <div class="form-title">Regístrate ahora</div>
+      <div class="form-sub">Revisamos tu perfil y te contactamos en menos de 48 hrs por WhatsApp.</div>
+
+      <div class="section-label">Tus datos</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre *</label>
+          <input type="text" id="f-nombre" placeholder="Tu nombre">
+        </div>
+        <div class="field">
+          <label>Apellido *</label>
+          <input type="text" id="f-apellido" placeholder="Tu apellido">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Correo electrónico *</label>
+          <input type="email" id="f-email" placeholder="tu@correo.com">
+        </div>
+        <div class="field">
+          <label>WhatsApp *</label>
+          <input type="tel" id="f-whatsapp" placeholder="+52 664 000 0000">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Ciudad *</label>
+          <input type="text" id="f-ciudad" placeholder="Ej. Tijuana, Monterrey">
+        </div>
+        <div class="field">
+          <label>Edad</label>
+          <input type="number" id="f-edad" placeholder="Ej. 24" min="16" max="60">
+        </div>
+      </div>
+
+      <div class="section-label">Tu contenido</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nicho principal *</label>
+          <select id="f-nicho">
+            <option value="">Selecciona</option>
+            <option>Lifestyle</option>
+            <option>Fitness y salud</option>
+            <option>Gastronomía</option>
+            <option>Moda y belleza</option>
+            <option>Tecnología</option>
+            <option>Entretenimiento</option>
+            <option>Negocios</option>
+            <option>Viajes</option>
+            <option>Educación</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Seguidores totales</label>
+          <input type="number" id="f-seguidores" placeholder="Ej. 3500">
+        </div>
+      </div>
+
+      <div class="section-label">Redes donde publicas</div>
+      <div class="redes-grid">
+        <div class="red-item" onclick="toggleRed(this,'TikTok')">
+          <div class="red-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.5L8 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="red-name">TikTok</span>
+        </div>
+        <div class="red-item" onclick="toggleRed(this,'Instagram')">
+          <div class="red-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.5L8 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="red-name">Instagram</span>
+        </div>
+        <div class="red-item" onclick="toggleRed(this,'YouTube Shorts')">
+          <div class="red-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.5L8 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="red-name">YouTube Shorts</span>
+        </div>
+        <div class="red-item" onclick="toggleRed(this,'Facebook')">
+          <div class="red-check"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.5L8 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span class="red-name">Facebook</span>
+        </div>
+      </div>
+
+      <div class="section-label">Una cosa más</div>
+      <div class="field" style="margin-bottom:0">
+        <label>¿Por qué quieres unirte a Climblight?</label>
+        <textarea id="f-razon" placeholder="En una o dos líneas cuéntanos qué te motivó..."></textarea>
+      </div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitForm()">
+        <div class="spinner"></div>
+        <span class="btn-text">Enviar mi solicitud →</span>
+      </button>
+      <div class="form-note">Sin costo · Sin compromisos · Respondemos en 48 hrs</div>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+
+    <div class="success-state" id="success-state">
+      <div class="success-icon">✦</div>
+      <div class="success-title">¡Solicitud recibida!</div>
+      <p class="success-sub">Tu información ya está en nuestro sistema. Revisamos tu perfil y te contactamos por WhatsApp en menos de 48 horas.</p>
+      <div class="success-tag">En revisión por Climblight</div>
+    </div>
+  </div>
+
+</div>
+</div>
+<!-- /view-registro -->
+
+<!-- ═══════════ VIEW: CURSOS ═══════════ -->
+<div class="view" id="view-cursos">
+  <section class="hero">
+    <div class="hero-eyebrow">Cursos en vivo · Google Meet</div>
+    <h1 class="hero-h1">
+      Elige tu<br>
+      <em>nivel.</em><br>
+      Aprende en vivo.
+    </h1>
+    <p class="hero-tagline">
+      <strong>Jueves y sábados.</strong> Un nivel distinto cada sesión.
+    </p>
+  </section>
+
+  <hr class="divider">
+
+  <div class="main" style="grid-template-columns:1fr;max-width:760px">
+    <div class="cursos-section">
+
+      <div class="dias-tabs">
+        <button class="dia-tab active" onclick="switchDia('jueves', this)">Jueves</button>
+        <button class="dia-tab" onclick="switchDia('sabado', this)">Sábado</button>
+      </div>
+
+      <div id="horarios-jueves" class="horarios-grid">
+        <div class="horario-card" onclick="selectHorario(this, 'Jueves', '6:00 PM', 'Nivel 1', 'Identidad y nicho')">
+          <div class="hc-nivel">Nivel 1</div>
+          <div class="hc-hora">6 PM</div>
+          <div class="hc-nombre">Identidad y nicho</div>
+          <div class="hc-check">✓</div>
+        </div>
+        <div class="horario-card" onclick="selectHorario(this, 'Jueves', '7:00 PM', 'Nivel 2', 'Storytelling y guión')">
+          <div class="hc-nivel">Nivel 2</div>
+          <div class="hc-hora">7 PM</div>
+          <div class="hc-nombre">Storytelling y guión</div>
+          <div class="hc-check">✓</div>
+        </div>
+        <div class="horario-card" onclick="selectHorario(this, 'Jueves', '8:00 PM', 'Nivel 3', 'Producción básica')">
+          <div class="hc-nivel">Nivel 3</div>
+          <div class="hc-hora">8 PM</div>
+          <div class="hc-nombre">Producción básica</div>
+          <div class="hc-check">✓</div>
+        </div>
+      </div>
+
+      <div id="horarios-sabado" class="horarios-grid" style="display:none">
+        <div class="horario-card" onclick="selectHorario(this, 'Sábado', '6:00 PM', 'Nivel 4', 'Edición para redes')">
+          <div class="hc-nivel">Nivel 4</div>
+          <div class="hc-hora">6 PM</div>
+          <div class="hc-nombre">Edición para redes</div>
+          <div class="hc-check">✓</div>
+        </div>
+        <div class="horario-card" onclick="selectHorario(this, 'Sábado', '7:00 PM', 'Nivel 5', 'Algoritmo y estrategia')">
+          <div class="hc-nivel">Nivel 5</div>
+          <div class="hc-hora">7 PM</div>
+          <div class="hc-nombre">Algoritmo y estrategia</div>
+          <div class="hc-check">✓</div>
+        </div>
+        <div class="horario-card" onclick="selectHorario(this, 'Sábado', '8:00 PM', 'Nivel 6', 'Marca personal y colaboraciones')">
+          <div class="hc-nivel">Nivel 6</div>
+          <div class="hc-hora">8 PM</div>
+          <div class="hc-nombre">Marca personal y colaboraciones</div>
+          <div class="hc-check">✓</div>
+        </div>
+      </div>
+
+      <div class="form-card" id="curso-form-card" style="display:none;margin-top:24px">
+        <div id="curso-form-state">
+          <div class="form-title">Confirma tu lugar</div>
+          <div class="form-sub" id="curso-selected-info">—</div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label>Nombre completo *</label>
+              <input type="text" id="c-nombre" placeholder="Tu nombre">
+            </div>
+            <div class="field">
+              <label>WhatsApp *</label>
+              <input type="tel" id="c-whatsapp" placeholder="+52 664 000 0000">
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Correo electrónico *</label>
+              <input type="email" id="c-email" placeholder="tu@correo.com">
+            </div>
+            <div class="field">
+              <label>¿Ya tomaste algún nivel?</label>
+              <select id="c-previo">
+                <option value="">Selecciona</option>
+                <option>No, es mi primer nivel</option>
+                <option>Sí, ya tomé otros niveles</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="btn-curso-submit" onclick="submitCurso()">
+            <div class="spinner"></div>
+            <span class="btn-text">Confirmar mi lugar →</span>
+          </button>
+          <div class="error-msg" id="curso-error-msg"></div>
+        </div>
+
+        <div class="success-state" id="curso-success-state">
+          <div class="success-icon">✦</div>
+          <div class="success-title">¡Lugar confirmado!</div>
+          <p class="success-sub">Te enviaremos el link de Google Meet por WhatsApp antes de la sesión.</p>
+          <div class="success-tag">Inscripción registrada</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- /view-cursos -->
+
+<!-- ═══════════ VIEW: ALIADOS ═══════════ -->
+<div class="view" id="view-aliados">
+
+<section class="hero">
+  <div class="hero-eyebrow">Passie Aliados · Negocios locales</div>
+  <h1 class="hero-h1">
+    Más exposición<br>
+    en manos de creadores<br>
+    de <em>tu ciudad.</em>
+  </h1>
+  <p class="hero-tagline">
+    <strong>Plan beta para reseñas reales.</strong> Intercambia productos y servicios por publicidad de creadores de contenido.
+  </p>
+</section>
+
+<hr class="divider">
+
+<div class="main">
+
+  <div class="left">
+    <div class="benefit-list">
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Creadores de tu ciudad te visitan</strong>
+          <span>Visitan tu negocio y publican contenido real en sus redes. Tú solo defines qué producto o servicio les das a cambio.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Apareces en los anuncios de Passie</strong>
+          <span>Tu negocio y descuento llegan a nuestra comunidad como referencia para que más personas te conozcan.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Intercambio simple y claro</strong>
+          <span>Producto o servicio gratis a cambio de la reseña. Sin contratos complicados, sin pagos por adelantado.</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-dot"></div>
+        <div class="benefit-body">
+          <strong>Creadores formados por Climblight</strong>
+          <span>No es cualquier creador. Pasan por nuestros cursos de contenido, storytelling y colaboración con marcas.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-box">
+      <p class="quote-text">"¿Te interesan nuestros planes de contenido y anuncios con influencers?"</p>
+      <div class="quote-author" style="margin-bottom:14px">Planes de pauta · Passie</div>
+      <div class="red-item" id="interes-planes" onclick="toggleInteres(this)" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.25)">
+        <div class="red-check" style="border-color:rgba(255,255,255,0.4)"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.2 5.5L8 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="red-name" style="color:rgba(255,255,255,0.85)">Sí, quiero que un vendedor me contacte</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div id="aliado-form-state">
+      <div class="form-title">Registra tu negocio</div>
+      <div class="form-sub">Sin compromisos. Te contactamos pronto por WhatsApp para asignarte tu primer creador.</div>
+
+      <div class="section-label">Tu negocio</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre del negocio *</label>
+          <input type="text" id="a-negocio" placeholder="Ej. Café Central">
+        </div>
+        <div class="field">
+          <label>Tu nombre *</label>
+          <input type="text" id="a-contacto" placeholder="Nombre completo">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>WhatsApp *</label>
+          <input type="tel" id="a-whatsapp" placeholder="+52 664 000 0000">
+        </div>
+        <div class="field">
+          <label>Ciudad *</label>
+          <input type="text" id="a-ciudad" placeholder="Ej. Mexicali, Tijuana">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Tipo de negocio *</label>
+        <select id="a-tipo">
+          <option value="">Selecciona</option>
+          <option>Restaurante / Café / Bar</option>
+          <option>Salud y Bienestar</option>
+          <option>Moda y Belleza</option>
+          <option>Servicios Profesionales</option>
+          <option>Educación</option>
+          <option>Entretenimiento</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <div class="section-label">El intercambio</div>
+      <div class="field" style="margin-bottom:10px">
+        <label>A cambio de la publicidad del creador ofreces</label>
+        <div style="padding:10px 14px;border:1.5px solid var(--navy);border-radius:10px;font-size:13px;background:var(--navy-bg);color:var(--navy);font-weight:600">✓ &nbsp;Producto o servicio gratis</div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>Describe qué recibirá el creador</label>
+        <input type="text" id="a-producto" placeholder="Ej. Corte completo, menú del día, clase de yoga...">
+      </div>
+
+      <div class="section-label">Tu presencia en Passie</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Descuento para la comunidad Passie</label>
+          <select id="a-descuento">
+            <option value="">Selecciona</option>
+            <option>10% de descuento</option>
+            <option>15% de descuento</option>
+            <option>20% de descuento</option>
+            <option>25% de descuento</option>
+            <option>30% o más</option>
+            <option>Producto de bienvenida gratis</option>
+            <option>Lo definimos juntos</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>¿Apareces en anuncios de Passie?</label>
+          <select id="a-anuncios">
+            <option value="">Selecciona</option>
+            <option value="Sí">Sí, en anuncios pagados</option>
+            <option value="Solo orgánico">Solo contenido orgánico</option>
+            <option value="Por definir">Quiero saber más</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-aliado-submit" onclick="submitAliado()">
+        <div class="spinner"></div>
+        <span class="btn-text">Unirme a Passie Aliados →</span>
+      </button>
+      <div class="form-note">Sin costo · Sin compromisos · Te contactamos por WhatsApp</div>
+      <div class="error-msg" id="aliado-error-msg"></div>
+    </div>
+
+    <div class="success-state" id="aliado-success-state">
+      <div class="success-icon">✦</div>
+      <div class="success-title">¡Ya eres aliado!</div>
+      <p class="success-sub">Recibimos tu registro. En breve te contactamos por WhatsApp para asignarte tu primer creador de contenido.</p>
+      <div class="success-tag">Bienvenido a Passie Aliados</div>
+    </div>
+  </div>
+
+</div>
+</div>
+<!-- /view-aliados -->
+
+<footer>
+  <div class="footer-logo">Climblight</div>
+  <div class="footer-copy">© 2025 Climblight · Creative Communities · Leadership & Innovation · México</div>
+</footer>
+
+<script>
+  const SUPABASE_URL = 'https://aaqwtrhjzkxovuvaayft.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
+  let redesSeleccionadas = [];
+
+  function switchView(view, btn) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  let selectedCard = null;
+  let selectedCurso = {};
+
+  function switchDia(dia, btn) {
+    document.querySelectorAll('.dia-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('horarios-jueves').style.display = dia === 'jueves' ? 'grid' : 'none';
+    document.getElementById('horarios-sabado').style.display = dia === 'sabado' ? 'grid' : 'none';
+    if (selectedCard) { selectedCard.classList.remove('selected'); selectedCard = null; }
+    document.getElementById('curso-form-card').style.display = 'none';
+  }
+
+  function selectHorario(el, dia, hora, nivel, nombre) {
+    if (selectedCard) selectedCard.classList.remove('selected');
+    el.classList.add('selected');
+    selectedCard = el;
+    selectedCurso = { dia, hora, nivel, nombre };
+
+    document.getElementById('curso-selected-info').textContent = nivel + ' — ' + nombre + ' · ' + dia + ' ' + hora;
+    const formCard = document.getElementById('curso-form-card');
+    formCard.style.display = 'block';
+    setTimeout(() => formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+
+  async function submitCurso() {
+    document.getElementById('curso-error-msg').style.display = 'none';
+    const nombre   = document.getElementById('c-nombre').value.trim();
+    const whatsapp = document.getElementById('c-whatsapp').value.trim();
+    const email    = document.getElementById('c-email').value.trim();
+
+    if (!nombre || !whatsapp || !email) {
+      const err = document.getElementById('curso-error-msg');
+      err.textContent = 'Completa los campos obligatorios (*)';
+      err.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-curso-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const inscripcion = {
+      nombre, whatsapp, email,
+      dia: selectedCurso.dia,
+      hora: selectedCurso.hora,
+      nivel: selectedCurso.nivel,
+      curso_nombre: selectedCurso.nombre,
+      previo: document.getElementById('c-previo').value || null,
+      status: 'inscrito',
+      fecha: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Inscripciones', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'apikey':        SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify(inscripcion)
+      });
+
+      if (res.ok || res.status === 201) {
+        document.getElementById('curso-form-state').style.display = 'none';
+        document.getElementById('curso-success-state').style.display = 'block';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('curso-error-msg');
+        errEl.textContent = 'Error al guardar. (' + (err.message || err.error || res.status) + ')';
+        errEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    } catch(e) {
+      const errEl = document.getElementById('curso-error-msg');
+      errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  let interesPlanes = false;
+
+  function toggleInteres(el) {
+    el.classList.toggle('checked');
+    interesPlanes = el.classList.contains('checked');
+    if (interesPlanes) {
+      el.querySelector('.red-check').style.background = 'white';
+      el.querySelector('.red-check svg path').setAttribute('stroke', '#1B3A5C');
+    } else {
+      el.querySelector('.red-check').style.background = 'transparent';
+      el.querySelector('.red-check svg path').setAttribute('stroke', 'white');
+    }
+  }
+
+  async function submitAliado() {
+    document.getElementById('aliado-error-msg').style.display = 'none';
+    const negocio  = document.getElementById('a-negocio').value.trim();
+    const contacto = document.getElementById('a-contacto').value.trim();
+    const whatsapp = document.getElementById('a-whatsapp').value.trim();
+    const ciudad   = document.getElementById('a-ciudad').value.trim();
+    const tipo     = document.getElementById('a-tipo').value;
+
+    if (!negocio || !contacto || !whatsapp || !ciudad || !tipo) {
+      const err = document.getElementById('aliado-error-msg');
+      err.textContent = 'Por favor completa todos los campos obligatorios (*)';
+      err.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-aliado-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const registro = {
+      negocio, contacto, whatsapp, ciudad,
+      tipo_negocio:        tipo,
+      producto_creador:    document.getElementById('a-producto').value.trim() || 'Por definir',
+      descuento_comunidad: document.getElementById('a-descuento').value || 'Por definir',
+      aparece_anuncios:    document.getElementById('a-anuncios').value || 'Por definir',
+      estado:              'Registrado',
+      notas:               interesPlanes ? 'INTERESADO EN PLANES DE ANUNCIOS — contactar por vendedor' : null
+    };
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/marcas_aliadas', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'apikey':        SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify(registro)
+      });
+
+      if (res.ok || res.status === 201) {
+        document.getElementById('aliado-form-state').style.display   = 'none';
+        document.getElementById('aliado-success-state').style.display = 'block';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('aliado-error-msg');
+        errEl.textContent = 'Error al guardar. Intenta de nuevo. (' + (err.message || err.error || res.status) + ')';
+        errEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    } catch(e) {
+      const errEl = document.getElementById('aliado-error-msg');
+      errEl.textContent = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  function toggleRed(el, nombre) {
+    el.classList.toggle('checked');
+    if (el.classList.contains('checked')) {
+      if (!redesSeleccionadas.includes(nombre)) redesSeleccionadas.push(nombre);
+    } else {
+      redesSeleccionadas = redesSeleccionadas.filter(r => r !== nombre);
+    }
+  }
+
+  async function submitForm() {
+    document.getElementById('error-msg').style.display = 'none';
+    const nombre   = document.getElementById('f-nombre').value.trim();
+    const apellido = document.getElementById('f-apellido').value.trim();
+    const email    = document.getElementById('f-email').value.trim();
+    const whatsapp = document.getElementById('f-whatsapp').value.trim();
+    const ciudad   = document.getElementById('f-ciudad').value.trim();
+    const nicho    = document.getElementById('f-nicho').value;
+
+    if (!nombre || !apellido || !email || !whatsapp || !ciudad || !nicho) {
+      const err = document.getElementById('error-msg');
+      err.textContent = 'Por favor completa todos los campos obligatorios (*)';
+      err.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const registro = {
+      nombre: nombre + ' ' + apellido,
+      email, whatsapp, ciudad,
+      edad:       document.getElementById('f-edad').value || null,
+      nicho,
+      seguidores: parseInt(document.getElementById('f-seguidores').value) || 0,
+      redes:      redesSeleccionadas.join(', ') || null,
+      razon:      document.getElementById('f-razon').value.trim() || null,
+      status:     'nuevo',
+      fecha:      new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Creators', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'apikey':        SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify(registro)
+      });
+
+      if (res.ok || res.status === 201) {
+        document.getElementById('form-state').style.display   = 'none';
+        document.getElementById('success-state').style.display = 'block';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('error-msg');
+        errEl.textContent = 'Error al guardar. Intenta de nuevo. (' + (err.message || err.error || res.status) + ')';
+        errEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    } catch(e) {
+      const errEl = document.getElementById('error-msg');
+      errEl.textContent = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

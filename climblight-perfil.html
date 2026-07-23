@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climblight — Gafete de creador</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:     #1B3A5C;
+  --navy-d:   #122840;
+  --navy-l:   #254E7A;
+  --navy-bg:  #EFF4FA;
+  --white:    #FFFFFF;
+  --off:      #F8F9FA;
+  --ink:      #111827;
+  --gray:     #6B7280;
+  --gray-l:   #9CA3AF;
+  --border:   #E5E7EB;
+  --gold:     #B8862B;
+  --gold-l:   #E7C878;
+  --gold-bg:  #FBF3E1;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy-bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;padding:36px 20px 60px}
+
+.top-wordmark{font-family:'DM Serif Display',serif;font-size:18px;color:var(--navy);margin-bottom:28px;display:flex;align-items:center;gap:6px}
+.top-wordmark::after{content:'✦';font-size:12px;color:var(--gold)}
+
+.state{max-width:340px;text-align:center;padding:40px 20px;color:var(--gray)}
+.spinner{width:26px;height:26px;border:2.5px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);margin-bottom:6px}
+
+.scene{width:100%;max-width:360px;perspective:1600px}
+.card{position:relative;width:100%;aspect-ratio:340/460;cursor:pointer;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,.2,.2,1)}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:var(--white);border:1px solid var(--border);box-shadow:0 20px 40px -18px rgba(18,40,64,.28);padding:26px 24px;display:flex;flex-direction:column}
+.face-back{transform:rotateY(180deg)}
+
+.tier-strip{position:absolute;top:0;left:0;right:0;height:6px;border-radius:22px 22px 0 0}
+.tier-base .tier-strip{background:var(--gray-l)}
+.tier-activo .tier-strip{background:var(--navy-l)}
+.tier-top .tier-strip{background:linear-gradient(90deg,var(--navy),var(--gold))}
+.tier-elite .tier-strip{background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+
+.f-header{display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px}
+.f-photo{width:64px;height:64px;border-radius:16px;background:var(--navy-bg);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:22px;overflow:hidden;flex-shrink:0}
+.f-photo img{width:100%;height:100%;object-fit:cover}
+
+.tier-pill{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;white-space:nowrap;letter-spacing:.02em}
+.tier-base .tier-pill{background:var(--off);color:var(--gray)}
+.tier-activo .tier-pill{background:var(--navy-bg);color:var(--navy)}
+.tier-top .tier-pill{background:var(--navy);color:white}
+.tier-elite .tier-pill{background:var(--gold-bg);color:var(--gold)}
+
+.f-name-block{margin-top:16px}
+.f-name{font-family:'DM Serif Display',serif;font-size:23px;color:var(--ink);display:flex;align-items:center;gap:6px;letter-spacing:-.2px}
+.f-verified{color:var(--navy);font-size:14px}
+.f-meta{font-size:13px;color:var(--gray);margin-top:4px}
+
+.f-spacer{flex:1}
+
+.f-score-row{border-top:1px solid var(--border);padding-top:16px;display:flex;justify-content:space-between;align-items:flex-end}
+.f-score-lbl{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--gray)}
+.f-score-name{font-family:'DM Serif Display',serif;font-size:15px;font-style:italic;color:var(--navy);margin-top:2px}
+.f-score-num{font-family:'DM Serif Display',serif;font-size:40px;line-height:1;color:var(--ink)}
+.f-score-num span{font-size:15px;color:var(--gray-l);font-family:'DM Sans',sans-serif}
+
+.f-footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:10.5px;color:var(--gray-l);letter-spacing:.03em}
+
+.hint{text-align:center;font-size:12px;color:var(--gray-l);margin-top:14px}
+
+.b-eyebrow{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin-top:8px}
+.b-title{font-family:'DM Serif Display',serif;font-size:19px;color:var(--ink);margin-top:4px;margin-bottom:18px}
+.sb-rows{display:flex;flex-direction:column;gap:13px;flex:1}
+.sb-row{}
+.sb-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink);margin-bottom:5px}
+.sb-top span:last-child{color:var(--gray);font-weight:600}
+.sb-track{height:6px;background:var(--off);border-radius:100px;overflow:hidden}
+.sb-fill{height:100%;background:var(--navy);border-radius:100px;width:0;transition:width 1s cubic-bezier(.3,.2,.2,1)}
+.b-total{border-top:1px solid var(--border);margin-top:16px;padding-top:14px;display:flex;justify-content:space-between;align-items:center}
+.b-total-lbl{font-size:13px;color:var(--gray)}
+.b-total-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink)}
+
+.actions{width:100%;max-width:360px;display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:13px;border-radius:100px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:transform .15s,background .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.97)}
+.btn-navy{background:var(--navy);color:white}
+.btn-navy:hover{background:var(--navy-d)}
+.btn-outline{background:var(--white);color:var(--navy);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--navy)}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy-d);color:white;font-size:13px;padding:11px 20px;border-radius:100px;opacity:0;pointer-events:none;transition:all .25s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion: reduce){.card,.sb-fill{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="top-wordmark">Climblight</div>
+
+<div id="app">
+  <div class="state" id="state-loading">
+    <div class="spinner"></div>
+    Cargando gafete…
+  </div>
+</div>
+
+<div class="actions" id="actions" style="display:none">
+  <button class="btn btn-navy" onclick="downloadBadge()">📸 Descargar gafete</button>
+  <button class="btn btn-outline" onclick="copyLink()">🔗 Copiar link</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://aaqwtrhjzkxovuvaayft.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
+const headers = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+let creatorSlug = 'creador';
+
+function showState(html) {
+  document.getElementById('app').innerHTML = '<div class="state">' + html + '</div>';
+  document.getElementById('actions').style.display = 'none';
+}
+
+function tierFor(score) {
+  if (score >= 90) return { key: 'elite', name: 'Elite Creator' };
+  if (score >= 70) return { key: 'top', name: 'Top Creator' };
+  if (score >= 40) return { key: 'activo', name: 'Creador Activo' };
+  return { key: 'base', name: 'Creador Climblight' };
+}
+
+function mesesActivo(fecha) {
+  if (!fecha) return 0;
+  const start = new Date(fecha);
+  if (isNaN(start)) return 0;
+  const now = new Date();
+  const meses = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+  return Math.max(meses, 0);
+}
+
+function initials(nombre) {
+  if (!nombre) return '?';
+  return nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+}
+
+async function init() {
+  if (!id) { showState('<div class="state-title">Falta el ID</div>Este link no incluye un creador válido.'); return; }
+
+  let creator;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/Creators?id=eq.${id}&select=*`, { headers });
+    if (!res.ok) throw new Error();
+    const rows = await res.json();
+    if (!rows.length) { showState('<div class="state-title">No encontrado</div>No existe un perfil con este link.'); return; }
+    creator = rows[0];
+  } catch (e) {
+    showState('<div class="state-title">Sin conexión</div>No se pudo cargar el perfil. Revisa tu internet e intenta de nuevo.');
+    return;
+  }
+
+  let nivelesCompletados = 0;
+  try {
+    const insRes = await fetch(`${SUPABASE_URL}/rest/v1/Inscripciones?email=eq.${encodeURIComponent(creator.email || '')}&status=eq.completado&select=nivel`, { headers });
+    if (insRes.ok) {
+      const ins = await insRes.json();
+      nivelesCompletados = new Set(ins.map(i => i.nivel)).size;
+    }
+  } catch (e) {}
+
+  let pagadas = 0, marcasDistintas = 0;
+  try {
+    const camRes = await fetch(`${SUPABASE_URL}/rest/v1/Campanas?creator_id=eq.${id}&status=eq.completada&select=marca,tipo`, { headers });
+    if (camRes.ok) {
+      const cams = await camRes.json();
+      pagadas = cams.filter(c => (c.tipo || '').toLowerCase() === 'pagada').length;
+      marcasDistintas = new Set(cams.map(c => (c.marca || '').toLowerCase().trim()).filter(Boolean)).size;
+    }
+  } catch (e) {}
+
+  render(creator, nivelesCompletados, pagadas, marcasDistintas);
+}
+
+function render(creator, nivelesCompletados, pagadas, marcasDistintas) {
+  const formacion   = Math.min(nivelesCompletados / 6 * 40, 40);
+  const antiguedad  = Math.min(mesesActivo(creator.fecha), 20);
+  const campanas    = Math.min(pagadas * 2, 20);
+  const alcance     = Math.min((parseInt(creator.seguidores) || 0) / 50000 * 10, 10);
+  const diversidad  = Math.min(marcasDistintas * 2, 10);
+  const total       = Math.min(Math.round(formacion + antiguedad + campanas + alcance + diversidad), 100);
+  const tier        = tierFor(total);
+
+  creatorSlug = (creator.nombre || 'creador').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  document.title = `${creator.nombre || 'Creador'} — Gafete Climblight`;
+
+  const photoHtml = creator.foto_url
+    ? `<img src="${creator.foto_url}" alt="${creator.nombre || ''}">`
+    : initials(creator.nombre);
+
+  const verified = creator.status === 'activo' ? '<span class="f-verified">✦</span>' : '';
+
+  document.getElementById('app').innerHTML = `
+    <div class="scene">
+      <div class="card tier-${tier.key}" id="card" onclick="toggleCard()">
+        <div class="face face-front" id="card-front">
+          <div class="tier-strip"></div>
+          <div class="f-header">
+            <div class="f-photo">${photoHtml}</div>
+            <div class="tier-pill">${tier.name}</div>
+          </div>
+          <div class="f-name-block">
+            <div class="f-name">${creator.nombre || 'Creador'} ${verified}</div>
+            <div class="f-meta">${creator.ciudad || '—'} · ${creator.nicho || '—'}</div>
+          </div>
+          <div class="f-spacer"></div>
+          <div class="f-score-row">
+            <div>
+              <div class="f-score-lbl">Climblight Score</div>
+              <div class="f-score-name">${tier.name}</div>
+            </div>
+            <div class="f-score-num">${total}<span>/100</span></div>
+          </div>
+          <div class="f-footer"><span>Climblight ✦</span><span>Perfil verificado</span></div>
+        </div>
+        <div class="face face-back" id="card-back">
+          <div class="tier-strip"></div>
+          <div class="b-eyebrow">Desglose</div>
+          <div class="b-title">Climblight Score</div>
+          <div class="sb-rows">
+            ${scoreRow('Formación', formacion, 40)}
+            ${scoreRow('Antigüedad activa', antiguedad, 20)}
+            ${scoreRow('Campañas pagadas', campanas, 20)}
+            ${scoreRow('Alcance', alcance, 10)}
+            ${scoreRow('Diversidad de marcas', diversidad, 10)}
+          </div>
+          <div class="b-total">
+            <div class="b-total-lbl">${tier.name}</div>
+            <div class="b-total-num">${total} / 100</div>
+          </div>
+          <div class="f-footer"><span>Climblight ✦</span><span>Actualizado hoy</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="hint">Toca la tarjeta para ver el desglose del Score</div>
+  `;
+
+  document.getElementById('actions').style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.sb-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  });
+}
+
+function scoreRow(label, value, max) {
+  const pct = Math.min((value / max) * 100, 100);
+  return `<div class="sb-row">
+    <div class="sb-top"><span>${label}</span><span>${Math.round(value)} / ${max}</span></div>
+    <div class="sb-track"><div class="sb-fill" data-pct="${pct}"></div></div>
+  </div>`;
+}
+
+function toggleCard() {
+  document.getElementById('card').classList.toggle('flipped');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+async function copyLink() {
+  try {
+    await navigator.clipboard.writeText(location.href);
+    showToast('Link copiado ✓');
+  } catch (e) {
+    showToast('No se pudo copiar el link');
+  }
+}
+
+async function downloadBadge() {
+  const isBack = document.getElementById('card').classList.contains('flipped');
+  const source = document.getElementById(isBack ? 'card-back' : 'card-front');
+  const clone = source.cloneNode(true);
+  clone.style.position = 'fixed';
+  clone.style.top = '-9999px';
+  clone.style.left = '0';
+  clone.style.transform = 'none';
+  clone.style.width = source.getBoundingClientRect().width + 'px';
+  clone.style.height = source.getBoundingClientRect().height + 'px';
+  document.body.appendChild(clone);
+  try {
+    const canvas = await html2canvas(clone, { scale: 3, backgroundColor: '#ffffff' });
+    const link = document.createElement('a');
+    link.download = `${creatorSlug}-climblight-${isBack ? 'score' : 'gafete'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Gafete descargado ✓');
+  } catch (e) {
+    showToast('No se pudo generar la imagen');
+  } finally {
+    document.body.removeChild(clone);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climblight CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1B3A5C;--navy-d:#122840;--navy-l:#254E7A;--navy-bg:#EFF4FA;
+  --white:#FFFFFF;--off:#F8F9FA;--ink:#111827;
+  --gray:#6B7280;--gray-l:#9CA3AF;--border:#E5E7EB;
+  --green:#1D9E75;--green-bg:#E8F8F1;
+  --yellow:#B8860B;--yellow-bg:#FFF8E6;
+  --red:#DC2626;--red-bg:#FEF2F2;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
+
+.sidebar{width:230px;flex-shrink:0;background:var(--navy);color:white;display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.sb-logo{padding:26px 22px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sb-logo-text{font-family:'DM Serif Display',serif;font-size:19px}
+.sb-logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+.sb-nav{padding:16px 12px;flex:1}
+.sb-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:.1em;text-transform:uppercase;padding:0 10px;margin-bottom:8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;color:rgba(255,255,255,0.65);font-size:13px;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.sb-item:hover{background:rgba(255,255,255,0.06);color:white}
+.sb-item.active{background:rgba(255,255,255,0.1);color:white}
+.sb-badge{margin-left:auto;background:white;color:var(--navy);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px}
+.sb-footer{padding:16px 22px;border-top:1px solid rgba(255,255,255,0.1)}
+.sb-status{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,0.5)}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80}
+.sb-dot.error{background:#F87171}
+
+.main{flex:1;overflow-y:auto}
+.topbar{padding:22px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(248,249,250,.92);backdrop-filter:blur(12px);z-index:10}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:19px;color:var(--ink)}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.btn-sm{padding:8px 18px;font-size:12px;font-weight:600;border-radius:100px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:none}
+.btn-navy{background:var(--navy);color:white}
+.btn-navy:hover{background:var(--navy-d)}
+.btn-outline{background:transparent;color:var(--gray);border:1.5px solid var(--border)}
+.btn-outline:hover{color:var(--ink);border-color:var(--gray-l)}
+
+.view{padding:28px 32px}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px}
+.stat-num{font-family:'DM Serif Display',serif;font-size:30px;color:var(--ink);line-height:1;margin-bottom:4px}
+.stat-num.navy{color:var(--navy)}
+.stat-lbl{font-size:11px;color:var(--gray-l)}
+
+.filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:7px 16px;border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--gray);transition:all .15s;font-family:'DM Sans',sans-serif}
+.filter-btn:hover{color:var(--ink);border-color:var(--gray-l)}
+.filter-btn.active{background:var(--navy);border-color:var(--navy);color:white}
+.search-input{padding:8px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;margin-left:auto;width:220px}
+.search-input:focus{border-color:var(--navy)}
+
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--gray-l);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--off)}
+td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(27,58,92,0.02)}
+.td-name{font-weight:600;color:var(--ink)}
+.td-meta{font-size:11px;color:var(--gray-l);margin-top:2px}
+
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:100px;font-size:11px;font-weight:600}
+.status-dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.s-nuevo{background:var(--navy-bg);color:var(--navy)}
+.s-contactado{background:var(--yellow-bg);color:var(--yellow)}
+.s-activo{background:var(--green-bg);color:var(--green)}
+.s-rechazado{background:var(--red-bg);color:var(--red)}
+
+.score-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:600}
+.score-hi{background:var(--green-bg);color:var(--green)}
+.score-mid{background:var(--navy-bg);color:var(--navy)}
+.score-lo{background:var(--yellow-bg);color:var(--yellow)}
+
+.row-actions{display:flex;gap:5px;opacity:0;transition:opacity .15s;flex-wrap:wrap}
+tr:hover .row-actions{opacity:1}
+.action-btn{padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.ab-green{background:var(--green-bg);color:var(--green)}
+.ab-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.ab-navy{background:var(--navy-bg);color:var(--navy)}
+.ab-gray{background:var(--off);color:var(--gray)}
+
+.empty{text-align:center;padding:70px 20px;color:var(--gray-l)}
+.empty-icon{font-size:32px;margin-bottom:14px}
+.empty-title{font-family:'DM Serif Display',serif;font-size:17px;color:var(--gray);margin-bottom:6px}
+.loading-state{text-align:center;padding:80px 20px;color:var(--gray-l)}
+.spinner-lg{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.error-banner{background:var(--red-bg);border:1px solid #FECACA;border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:var(--red);display:none}
+.error-banner.show{display:block}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:18px;padding:32px;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;position:relative}
+.modal-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--gray-l);margin-bottom:20px}
+.modal-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.modal-row:last-of-type{border-bottom:none}
+.modal-label{font-size:11px;color:var(--gray-l);width:110px;flex-shrink:0;padding-top:2px}
+.modal-val{font-size:13px;color:var(--ink);line-height:1.6}
+.modal-close{position:absolute;top:18px;right:18px;background:none;border:none;color:var(--gray-l);font-size:22px;cursor:pointer;line-height:1}
+.modal-section{font-size:10px;font-weight:700;color:var(--gray-l);letter-spacing:.1em;text-transform:uppercase;margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.score-breakdown{margin:12px 0}
+.sb-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sb-lbl{font-size:11px;color:var(--gray-l);width:110px;flex-shrink:0}
+.sb-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.sb-fill{height:100%;border-radius:2px;background:var(--navy)}
+.sb-val{font-size:11px;font-weight:600;color:var(--gray);width:24px;text-align:right}
+.score-total-row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.score-total-lbl{font-size:14px;font-weight:500;color:var(--ink)}
+.score-total-num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--green)}
+.modal-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+
+/* LINK MODAL */
+.link-box{background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:12px 0;font-size:12px;color:var(--navy);word-break:break-all;font-family:monospace;line-height:1.6}
+.link-copy-btn{width:100%;padding:10px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-top:4px}
+.link-copy-btn:hover{background:var(--navy-d)}
+.link-copy-btn.copied{background:var(--green)}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+
+.prog-wrap{display:flex;align-items:center;gap:6px}
+.prog-bg{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;background:var(--navy)}
+.prog-txt{font-size:11px;color:var(--gray-l)}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">Climblight</div>
+    <div class="sb-logo-sub">CRM · Panel admin</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">Creadores</div>
+    <button class="sb-item active" onclick="switchModule('creadores'); setFilter('todos', this)">
+      ◈ Todos
+      <span class="sb-badge" id="badge-total">0</span>
+    </button>
+    <button class="sb-item" onclick="switchModule('creadores'); setFilter('nuevo', this)">● Nuevos</button>
+    <button class="sb-item" onclick="switchModule('creadores'); setFilter('contactado', this)">● Contactados</button>
+    <button class="sb-item" onclick="switchModule('creadores'); setFilter('activo', this)">● Activos</button>
+    <div class="sb-label" style="margin-top:18px">Marcas aliadas</div>
+    <button class="sb-item" onclick="switchModule('aliados'); setFilter('todos', this)">
+      ◈ Todas
+      <span class="sb-badge" id="badge-aliados">0</span>
+    </button>
+    <button class="sb-item" onclick="switchModule('aliados'); setFilter('interesado', this)">★ Interesadas en planes</button>
+    <button class="sb-item" onclick="switchModule('aliados'); setFilter('Registrado', this)">● Registradas</button>
+    <button class="sb-item" onclick="switchModule('aliados'); setFilter('Activo', this)">● Activas</button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-status">
+      <span class="sb-dot" id="conn-dot"></span>
+      <span id="conn-text">Conectando…</span>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Creadores registrados</div>
+    <div class="topbar-actions">
+      <button class="btn-sm btn-outline" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn-sm btn-navy" onclick="loadData()">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <div class="view">
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="stat-num navy" id="stat-total">—</div><div class="stat-lbl" id="stat-lbl-1">Total creadores</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-nuevos">—</div><div class="stat-lbl" id="stat-lbl-2">Sin contactar</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-activos">—</div><div class="stat-lbl" id="stat-lbl-3">Activos</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-ciudades">—</div><div class="stat-lbl" id="stat-lbl-4">Ciudades</div></div>
+    </div>
+
+    <div class="filters" id="filters-creadores">
+      <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('nuevo',this)">Nuevos</button>
+      <button class="filter-btn" onclick="setFilter('contactado',this)">Contactados</button>
+      <button class="filter-btn" onclick="setFilter('activo',this)">Activos</button>
+      <button class="filter-btn" onclick="setFilter('rechazado',this)">Rechazados</button>
+      <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTabla()" id="search">
+    </div>
+
+    <div class="filters" id="filters-aliados" style="display:none">
+      <button class="filter-btn active" onclick="setFilter('todos',this)">Todas</button>
+      <button class="filter-btn" onclick="setFilter('interesado',this)">★ Interesadas en planes</button>
+      <button class="filter-btn" onclick="setFilter('Registrado',this)">Registradas</button>
+      <button class="filter-btn" onclick="setFilter('Contactado',this)">Contactadas</button>
+      <button class="filter-btn" onclick="setFilter('Activo',this)">Activas</button>
+      <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaAliados()" id="search-aliados">
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <div class="loading-state"><div class="spinner-lg"></div>Cargando desde Supabase…</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalBtn()">×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL LINK -->
+<div class="modal-overlay" id="link-modal-overlay" onclick="closeLinkModal(event)">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeLinkModalBtn()">×</button>
+    <div class="modal-title">Link de reporte</div>
+    <div class="modal-sub" id="link-modal-sub">Generando link único…</div>
+    <div class="link-box" id="link-box">—</div>
+    <button class="link-copy-btn" id="link-copy-btn" onclick="copyLink()">Copiar link</button>
+    <p style="font-size:11px;color:var(--gray-l);margin-top:10px;text-align:center">Este link es de un solo uso. Cuando el creador lo llene, expira automáticamente.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://aaqwtrhjzkxovuvaayft.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
+  const BASE_URL = window.location.origin;
+
+  let allData = [];
+  let allAliados = [];
+  let filtroActual = 'todos';
+  let currentLink = '';
+  let currentModule = 'creadores';
+
+  function switchModule(mod) {
+    currentModule = mod;
+    filtroActual = 'todos';
+    document.getElementById('topbar-title').textContent = mod === 'creadores' ? 'Creadores registrados' : 'Marcas aliadas · Passie';
+    document.getElementById('filters-creadores').style.display = mod === 'creadores' ? 'flex' : 'none';
+    document.getElementById('filters-aliados').style.display = mod === 'aliados' ? 'flex' : 'none';
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    const activeFilters = document.getElementById(mod === 'creadores' ? 'filters-creadores' : 'filters-aliados');
+    if (activeFilters) activeFilters.querySelector('.filter-btn').classList.add('active');
+    if (mod === 'creadores') {
+      document.getElementById('stat-lbl-1').textContent = 'Total creadores';
+      document.getElementById('stat-lbl-2').textContent = 'Sin contactar';
+      document.getElementById('stat-lbl-3').textContent = 'Activos';
+      document.getElementById('stat-lbl-4').textContent = 'Ciudades';
+      updateStats(); renderTabla();
+    } else {
+      document.getElementById('stat-lbl-1').textContent = 'Total marcas';
+      document.getElementById('stat-lbl-2').textContent = '★ Interesadas en planes';
+      document.getElementById('stat-lbl-3').textContent = 'Activas';
+      document.getElementById('stat-lbl-4').textContent = 'Ciudades';
+      updateStatsAliados(); renderTablaAliados();
+    }
+  }
+
+  async function loadAliados() {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/marcas_aliadas?select=*&order=created_at.desc', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      if (!res.ok) throw new Error('Error ' + res.status);
+      allAliados = await res.json();
+      document.getElementById('badge-aliados').textContent = allAliados.length;
+      if (currentModule === 'aliados') { updateStatsAliados(); renderTablaAliados(); }
+    } catch(e) {
+      console.error('Error cargando aliados:', e);
+    }
+  }
+
+  function updateStatsAliados() {
+    document.getElementById('stat-total').textContent = allAliados.length;
+    document.getElementById('stat-nuevos').textContent = allAliados.filter(d => (d.notas||'').includes('INTERESADO')).length;
+    document.getElementById('stat-activos').textContent = allAliados.filter(d => d.estado === 'Activo').length;
+    const cities = {};
+    allAliados.forEach(d => { if (d.ciudad) cities[d.ciudad] = true; });
+    document.getElementById('stat-ciudades').textContent = Object.keys(cities).length;
+  }
+
+  function getFilteredAliados() {
+    const q = (document.getElementById('search-aliados')?.value || '').toLowerCase();
+    return allAliados.filter(d => {
+      let mf;
+      if (filtroActual === 'todos') mf = true;
+      else if (filtroActual === 'interesado') mf = (d.notas||'').includes('INTERESADO');
+      else mf = d.estado === filtroActual;
+      const ms = !q || (d.negocio||'').toLowerCase().includes(q) || (d.ciudad||'').toLowerCase().includes(q) || (d.tipo_negocio||'').toLowerCase().includes(q) || (d.contacto||'').toLowerCase().includes(q);
+      return mf && ms;
+    });
+  }
+
+  function statusBadgeAliado(s) {
+    const map = {'Registrado':'s-nuevo','Contactado':'s-contactado','Creador Asignado':'s-contactado','Activo':'s-activo'};
+    return '<span class="status ' + (map[s]||'s-nuevo') + '"><span class="status-dot"></span>' + (s||'Registrado') + '</span>';
+  }
+
+  function renderTablaAliados() {
+    const data = getFilteredAliados();
+    const wrap = document.getElementById('table-wrap');
+    if (!allAliados.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin marcas registradas</div><p style="font-size:13px">Cuando un negocio se registre en Passie Aliados aparecerá aquí.</p></div>';
+      return;
+    }
+    if (!data.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin resultados</div><p style="font-size:13px">Intenta otro filtro.</p></div>';
+      return;
+    }
+
+    let rows = '';
+    data.forEach(function(d) {
+      const interesado = (d.notas||'').includes('INTERESADO');
+      rows += '<tr' + (interesado ? ' style="background:#FFF8E6"' : '') + '>' +
+        '<td><div class="td-name">' + (interesado ? '★ ' : '') + (d.negocio||'—') + '</div><div class="td-meta">' + (d.contacto||'') + '</div></td>' +
+        '<td>' + (d.ciudad||'—') + '</td>' +
+        '<td>' + (d.tipo_negocio||'—') + '</td>' +
+        '<td style="max-width:160px">' + (d.producto_creador||'—') + '</td>' +
+        '<td>' + (d.descuento_comunidad||'—') + '</td>' +
+        '<td>' + (d.aparece_anuncios||'—') + '</td>' +
+        '<td>' + statusBadgeAliado(d.estado) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="action-btn ab-gray" onclick="openModalAliado(\'' + d.id + '\')">Ver</button>' +
+          '<button class="action-btn ab-yellow" onclick="updateStatusAliado(\'' + d.id + '\',\'Contactado\')">Contactar</button>' +
+          '<button class="action-btn ab-navy" onclick="updateStatusAliado(\'' + d.id + '\',\'Creador Asignado\')">Asignar creador</button>' +
+          '<button class="action-btn ab-green" onclick="updateStatusAliado(\'' + d.id + '\',\'Activo\')">Activar</button>' +
+        '</div></td>' +
+        '</tr>';
+    });
+
+    wrap.innerHTML = '<table><thead><tr>' +
+      '<th>Negocio</th><th>Ciudad</th><th>Tipo</th><th>Producto al creador</th><th>Descuento</th><th>Anuncios</th><th>Estatus</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function updateStatusAliado(id, estado) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/marcas_aliadas?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ estado })
+      });
+      const idx = allAliados.findIndex(d => d.id === id);
+      if (idx >= 0) allAliados[idx].estado = estado;
+      updateStatsAliados(); renderTablaAliados();
+      showToast('Estatus actualizado → ' + estado);
+    } catch { showToast('Error al actualizar'); }
+  }
+
+  function openModalAliado(id) {
+    const d = allAliados.find(x => x.id === id);
+    if (!d) return;
+    const interesado = (d.notas||'').includes('INTERESADO');
+    document.getElementById('modal-body').innerHTML =
+      '<div class="modal-title">' + (interesado ? '★ ' : '') + (d.negocio||'—') + '</div>' +
+      '<div class="modal-sub">' + formatFecha(d.created_at) + ' · ' + statusBadgeAliado(d.estado) + '</div>' +
+      (interesado ? '<div style="background:#FFF8E6;border:1.5px solid #E8D05A;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#B8860B;font-weight:600">★ INTERESADO EN PLANES DE ANUNCIOS — contactar por vendedor</div>' : '') +
+      '<div class="modal-section">Información</div>' +
+      '<div class="modal-row"><div class="modal-label">Contacto</div><div class="modal-val">' + (d.contacto||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">WhatsApp</div><div class="modal-val">' + (d.whatsapp||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Ciudad</div><div class="modal-val">' + (d.ciudad||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Tipo</div><div class="modal-val">' + (d.tipo_negocio||'—') + '</div></div>' +
+      '<div class="modal-section">El intercambio</div>' +
+      '<div class="modal-row"><div class="modal-label">Producto al creador</div><div class="modal-val">' + (d.producto_creador||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Descuento comunidad</div><div class="modal-val">' + (d.descuento_comunidad||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Anuncios Passie</div><div class="modal-val">' + (d.aparece_anuncios||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Creador asignado</div><div class="modal-val">' + (d.creador_asignado||'Sin asignar') + '</div></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn-sm btn-navy" onclick="updateStatusAliado(\'' + d.id + '\',\'Creador Asignado\');closeModalBtn()">Asignar creador</button>' +
+        '<button class="btn-sm btn-outline" onclick="updateStatusAliado(\'' + d.id + '\',\'Activo\');closeModalBtn()">Marcar activa</button>' +
+      '</div>';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  async function loadData() {
+    document.getElementById('table-wrap').innerHTML = '<div class="loading-state"><div class="spinner-lg"></div>Cargando desde Supabase…</div>';
+    document.getElementById('error-banner').classList.remove('show');
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Creators?select=*&order=id.desc', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      if (!res.ok) throw new Error('Error ' + res.status);
+      const data = await res.json();
+      allData = data.map(d => Object.assign({}, d, { status: d.status || 'nuevo' }));
+      document.getElementById('conn-dot').classList.remove('error');
+      document.getElementById('conn-text').textContent = 'Conectado · Supabase';
+      updateStats();
+      renderTabla();
+    } catch(e) {
+      document.getElementById('conn-dot').classList.add('error');
+      document.getElementById('conn-text').textContent = 'Error de conexión';
+      const b = document.getElementById('error-banner');
+      b.textContent = 'No se pudieron cargar los datos: ' + e.message;
+      b.classList.add('show');
+      document.getElementById('table-wrap').innerHTML = '';
+    }
+  }
+
+  function calcScore(d) {
+    const segScore = Math.min((parseInt(d.seguidores) || 0) / 10000 * 10, 10);
+    return Math.round(segScore);
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = allData.length;
+    document.getElementById('stat-nuevos').textContent = allData.filter(d => d.status === 'nuevo').length;
+    document.getElementById('stat-activos').textContent = allData.filter(d => d.status === 'activo').length;
+    const cities = {};
+    allData.forEach(d => { if (d.ciudad) cities[d.ciudad] = true; });
+    document.getElementById('stat-ciudades').textContent = Object.keys(cities).length;
+    document.getElementById('badge-total').textContent = allData.length;
+  }
+
+  function setFilter(f, btn) {
+    filtroActual = f;
+    document.querySelectorAll('.filter-btn,.sb-item').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    if (currentModule === 'aliados') renderTablaAliados();
+    else renderTabla();
+  }
+
+  function getFiltered() {
+    const q = (document.getElementById('search')?.value || '').toLowerCase();
+    return allData.filter(d => {
+      const mf = filtroActual === 'todos' || d.status === filtroActual;
+      const ms = !q || (d.nombre||'').toLowerCase().includes(q) || (d.ciudad||'').toLowerCase().includes(q) || (d.nicho||'').toLowerCase().includes(q);
+      return mf && ms;
+    });
+  }
+
+  function statusBadge(s) {
+    const map = {nuevo:'s-nuevo',contactado:'s-contactado',activo:'s-activo',rechazado:'s-rechazado'};
+    const labels = {nuevo:'Nuevo',contactado:'Contactado',activo:'Activo',rechazado:'Rechazado'};
+    return '<span class="status ' + (map[s]||'s-nuevo') + '"><span class="status-dot"></span>' + (labels[s]||s) + '</span>';
+  }
+
+  function formatSeg(n) {
+    const num = parseInt(n)||0;
+    return num >= 1000 ? (num/1000).toFixed(1)+'K' : (num||'—');
+  }
+
+  function formatFecha(f) {
+    if (!f) return '—';
+    try { return new Date(f).toLocaleDateString('es-MX',{day:'2-digit',month:'short'}); } catch { return '—'; }
+  }
+
+  function renderTabla() {
+    const data = getFiltered();
+    const wrap = document.getElementById('table-wrap');
+    if (!allData.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin registros</div><p style="font-size:13px">Cuando un creador se registre aparecerá aquí.</p></div>';
+      return;
+    }
+    if (!data.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin resultados</div><p style="font-size:13px">Intenta otro filtro.</p></div>';
+      return;
+    }
+
+    let rows = '';
+    data.forEach(function(d) {
+      const score = calcScore(d);
+      const scoreClass = score >= 60 ? 'score-hi' : score >= 30 ? 'score-mid' : 'score-lo';
+      rows += '<tr>' +
+        '<td><div class="td-name">' + (d.nombre||'—') + '</div><div class="td-meta">' + (d.email||'') + '</div></td>' +
+        '<td>' + (d.ciudad||'—') + '</td>' +
+        '<td>' + (d.nicho||'—') + '</td>' +
+        '<td>' + (d.redes||'—') + '</td>' +
+        '<td>' + formatSeg(d.seguidores) + '</td>' +
+        '<td><span class="score-pill ' + scoreClass + '">' + score + '</span></td>' +
+        '<td>' + formatFecha(d.fecha) + '</td>' +
+        '<td>' + statusBadge(d.status) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="action-btn ab-gray" onclick="openModal(' + d.id + ')">Ver</button>' +
+          '<button class="action-btn ab-navy" onclick="generarLink(' + d.id + ', \'' + (d.nombre||'').replace(/'/g,"") + '\')">🔗 Link campaña</button>' +
+          '<button class="action-btn ab-green" onclick="updateStatus(' + d.id + ',\'activo\')">Activar</button>' +
+          '<button class="action-btn ab-yellow" onclick="updateStatus(' + d.id + ',\'contactado\')">Contactar</button>' +
+        '</div></td>' +
+        '</tr>';
+    });
+
+    wrap.innerHTML = '<table><thead><tr>' +
+      '<th>Creador</th><th>Ciudad</th><th>Nicho</th><th>Redes</th><th>Seguidores</th><th>Score</th><th>Fecha</th><th>Estatus</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function updateStatus(id, status) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/Creators?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ status })
+      });
+      const idx = allData.findIndex(d => d.id === id);
+      if (idx >= 0) allData[idx].status = status;
+      updateStats(); renderTabla();
+      showToast('Estatus actualizado → ' + status);
+    } catch { showToast('Error al actualizar'); }
+  }
+
+  async function generarLink(creatorId, nombre) {
+    document.getElementById('link-modal-sub').textContent = 'Generando link para ' + nombre + '…';
+    document.getElementById('link-box').textContent = 'Generando…';
+    document.getElementById('link-copy-btn').textContent = 'Copiar link';
+    document.getElementById('link-copy-btn').classList.remove('copied');
+    document.getElementById('link-modal-overlay').classList.add('open');
+
+    const token = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Campanas', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ creator_id: creatorId, token, status: 'pendiente', token_usado: false })
+      });
+
+      if (res.ok || res.status === 201) {
+        currentLink = BASE_URL + '/climblight-reporte.html?token=' + token;
+        document.getElementById('link-modal-sub').textContent = 'Link listo para ' + nombre + ' — de un solo uso.';
+        document.getElementById('link-box').textContent = currentLink;
+      } else {
+        throw new Error('Error al crear');
+      }
+    } catch(e) {
+      document.getElementById('link-box').textContent = 'Error al generar. Intenta de nuevo.';
+    }
+  }
+
+  function copyLink() {
+    if (!currentLink) return;
+    navigator.clipboard.writeText(currentLink).then(function() {
+      const btn = document.getElementById('link-copy-btn');
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      showToast('Link copiado al portapapeles');
+    });
+  }
+
+  function openModal(id) {
+    const d = allData.find(x => x.id === id);
+    if (!d) return;
+    const score = calcScore(d);
+    document.getElementById('modal-body').innerHTML =
+      '<div class="modal-title">' + (d.nombre||'—') + '</div>' +
+      '<div class="modal-sub">' + formatFecha(d.fecha) + ' · ' + statusBadge(d.status) + '</div>' +
+      '<div class="modal-section">Información</div>' +
+      '<div class="modal-row"><div class="modal-label">Correo</div><div class="modal-val">' + (d.email||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">WhatsApp</div><div class="modal-val">' + (d.whatsapp||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Ciudad</div><div class="modal-val">' + (d.ciudad||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Nicho</div><div class="modal-val">' + (d.nicho||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Redes</div><div class="modal-val">' + (d.redes||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Seguidores</div><div class="modal-val">' + formatSeg(d.seguidores) + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">¿Por qué Climblight?</div><div class="modal-val">' + (d.razon||'—') + '</div></div>' +
+      '<div class="modal-section">Climblight Score</div>' +
+      '<div class="score-breakdown">' +
+        '<div class="sb-row"><div class="sb-lbl">Alcance</div><div class="sb-bar"><div class="sb-fill" style="width:' + Math.min((parseInt(d.seguidores)||0)/10000*100,100) + '%"></div></div><div class="sb-val">' + score + '</div></div>' +
+      '</div>' +
+      '<div class="score-total-row"><div class="score-total-lbl">Score actual</div><div class="score-total-num">' + score + ' / 100</div></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn-sm btn-navy" onclick="generarLink(' + d.id + ',\'' + (d.nombre||'').replace(/'/g,'') + '\');closeModalBtn()">🔗 Generar link de campaña</button>' +
+        '<button class="btn-sm btn-outline" onclick="updateStatus(' + d.id + ',\'activo\');closeModalBtn()">Marcar activo</button>' +
+      '</div>';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalBtn(); }
+  function closeModalBtn() { document.getElementById('modal-overlay').classList.remove('open'); }
+  function closeLinkModal(e) { if (e.target === document.getElementById('link-modal-overlay')) closeLinkModalBtn(); }
+  function closeLinkModalBtn() { document.getElementById('link-modal-overlay').classList.remove('open'); currentLink = ''; }
+
+  function exportCSV() {
+    if (currentModule === 'aliados') {
+      const data = getFilteredAliados();
+      if (!data.length) { showToast('Sin datos'); return; }
+      const headers = ['Negocio','Contacto','WhatsApp','Ciudad','Tipo','Producto','Descuento','Anuncios','Interés planes','Estado','Fecha'];
+      const rows = data.map(d => [d.negocio,d.contacto,d.whatsapp,d.ciudad,d.tipo_negocio,d.producto_creador,d.descuento_comunidad,d.aparece_anuncios,(d.notas||'').includes('INTERESADO')?'SÍ':'No',d.estado,d.created_at].map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+      const csv = [headers.join(',')].concat(rows).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+      a.download = 'passie-marcas-aliadas.csv';
+      a.click();
+      showToast('CSV exportado');
+      return;
+    }
+    const data = getFiltered();
+    if (!data.length) { showToast('Sin datos'); return; }
+    const headers = ['Nombre','Email','WhatsApp','Ciudad','Nicho','Seguidores','Redes','Fecha','Estatus'];
+    const rows = data.map(d => [d.nombre,d.email,d.whatsapp,d.ciudad,d.nicho,d.seguidores,d.redes,d.fecha,d.status].map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+    const csv = [headers.join(',')].concat(rows).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download = 'climblight-creadores.csv';
+    a.click();
+    showToast('CSV exportado');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  loadData();
+  loadAliados();
+</script>
+</body>
+</html>
