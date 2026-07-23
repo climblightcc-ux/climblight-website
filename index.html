@@ -1208,10 +1208,26 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
   }
 
   function tierForCat(score) {
-    if (score >= 90) return { key: 'elite', name: 'Elite Creator' };
-    if (score >= 70) return { key: 'top', name: 'Top Creator' };
-    if (score >= 40) return { key: 'activo', name: 'Creador Activo' };
-    return { key: 'base', name: 'Creador Climblight' };
+    if (score >= 90) return { key: 'elite', name: 'Elite Creator', color: '#B8862B' };
+    if (score >= 70) return { key: 'top', name: 'Top Creator', color: '#1B3A5C' };
+    if (score >= 40) return { key: 'activo', name: 'Creador Activo', color: '#254E7A' };
+    return { key: 'base', name: 'Creador Climblight', color: '#9CA3AF' };
+  }
+
+  function scoreRingCat(score, size, stroke) {
+    const tier = tierForCat(score);
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const offset = c * (1 - score / 100);
+    const center = size / 2;
+    const fontSize = Math.round(size * 0.30);
+    return '<div style="position:relative;width:' + size + 'px;height:' + size + 'px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">' +
+      '<svg width="' + size + '" height="' + size + '" style="transform:rotate(-90deg)">' +
+        '<circle cx="' + center + '" cy="' + center + '" r="' + r + '" fill="none" stroke="#EFF4FA" stroke-width="' + stroke + '"/>' +
+        '<circle cx="' + center + '" cy="' + center + '" r="' + r + '" fill="none" stroke="' + tier.color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '" style="transition:stroke-dashoffset 1s ease"/>' +
+      '</svg>' +
+      '<span style="position:absolute;font-family:\'DM Serif Display\',serif;font-size:' + fontSize + 'px;color:#111827">' + score + '</span>' +
+    '</div>';
   }
 
   function initialsCat(nombre) {
@@ -1301,9 +1317,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
         '</div>' +
         '<div class="cc-name">' + d.nombre + '</div>' +
         '<div class="cc-meta">' + (d.ciudad || '—') + (d.nicho ? ' · ' + d.nicho : '') + '</div>' +
-        '<div class="cc-score-row">' +
-          '<div class="cc-score-lbl">Climblight Score</div>' +
-          '<div class="cc-score-num">' + d.score + '</div>' +
+        '<div class="cc-score-row" style="justify-content:flex-start;gap:12px">' +
+          scoreRingCat(d.score, 54, 5) +
+          '<div class="cc-score-lbl" style="text-align:left">Climblight<br>Score</div>' +
         '</div>' +
         '<button class="cc-contact-btn" onclick="openContactModal(' + d.id + ',\'' + d.nombre.replace(/'/g, "") + '\')">Contactar</button>' +
       '</div>';

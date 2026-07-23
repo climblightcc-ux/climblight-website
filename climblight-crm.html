@@ -660,7 +660,7 @@ tr:hover .row-actions{opacity:1}
       allData = data.map(d => Object.assign({}, d, { status: d.status || 'nuevo' }));
       document.getElementById('conn-dot').classList.remove('error');
       document.getElementById('conn-text').textContent = 'Conectado · Supabase';
-      await loadCampanasPagadas();
+      await loadScoreData();
       updateStats();
       renderTabla();
     } catch(e) {
@@ -673,24 +673,46 @@ tr:hover .row-actions{opacity:1}
     }
   }
 
-  async function loadCampanasPagadas() {
+  let nivelesPorEmail = {};
+
+  async function loadScoreData() {
     campanasPorCreador = {};
+    nivelesPorEmail = {};
+    const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
     try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/Campanas?status=eq.completada&tipo=eq.pagada&select=creator_id,marca,monto,fecha', {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-      });
-      if (!res.ok) return;
-      const cams = await res.json();
-      cams.forEach(c => {
-        if (!campanasPorCreador[c.creator_id]) {
-          campanasPorCreador[c.creator_id] = { total: 0, campanas: [] };
-        }
-        const monto = parseFloat(c.monto) || 0;
-        campanasPorCreador[c.creator_id].total += monto;
-        campanasPorCreador[c.creator_id].campanas.push({ marca: c.marca, monto, fecha: c.fecha });
-      });
+      const [insRes, camRes] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/Inscripciones?status=eq.completado&select=email,nivel', { headers: H }),
+        fetch(SUPABASE_URL + '/rest/v1/Campanas?status=eq.completada&select=creator_id,marca,tipo,monto,fecha', { headers: H })
+      ]);
+
+      if (insRes.ok) {
+        const ins = await insRes.json();
+        ins.forEach(i => {
+          const key = (i.email || '').toLowerCase();
+          if (!nivelesPorEmail[key]) nivelesPorEmail[key] = new Set();
+          nivelesPorEmail[key].add(i.nivel);
+        });
+      }
+
+      if (camRes.ok) {
+        const cams = await camRes.json();
+        cams.forEach(c => {
+          if (!campanasPorCreador[c.creator_id]) {
+            campanasPorCreador[c.creator_id] = { total: 0, pagadas: 0, marcas: new Set(), campanas: [] };
+          }
+          const info = campanasPorCreador[c.creator_id];
+          const esPagada = (c.tipo || '').toLowerCase() === 'pagada';
+          const monto = parseFloat(c.monto) || 0;
+          if (esPagada) {
+            info.total += monto;
+            info.pagadas += 1;
+            info.campanas.push({ marca: c.marca, monto, fecha: c.fecha });
+          }
+          if (c.marca) info.marcas.add(c.marca.toLowerCase().trim());
+        });
+      }
     } catch (e) {
-      // Si falla, simplemente no se muestran montos — no bloquea el resto del CRM
+      // Si falla, el Score cae a lo que se pueda calcular con lo disponible — no bloquea el resto del CRM
     }
   }
 
@@ -702,9 +724,49 @@ tr:hover .row-actions{opacity:1}
     return '$' + Math.round(n).toLocaleString('es-MX') + ' MXN';
   }
 
+  function mesesActivoScore(fecha) {
+    if (!fecha) return 0;
+    const start = new Date(fecha);
+    if (isNaN(start)) return 0;
+    const now = new Date();
+    return Math.max((now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()), 0);
+  }
+
+  function tierForScore(score) {
+    if (score >= 90) return { key: 'elite', name: 'Elite Creator', color: '#B8862B' };
+    if (score >= 70) return { key: 'top', name: 'Top Creator', color: '#1B3A5C' };
+    if (score >= 40) return { key: 'activo', name: 'Creador Activo', color: '#254E7A' };
+    return { key: 'base', name: 'Creador Climblight', color: '#9CA3AF' };
+  }
+
+  function scoreRing(score, size, stroke) {
+    const tier = tierForScore(score);
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const offset = c * (1 - score / 100);
+    const center = size / 2;
+    const fontSize = Math.round(size * 0.30);
+    return '<div style="position:relative;width:' + size + 'px;height:' + size + 'px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">' +
+      '<svg width="' + size + '" height="' + size + '" style="transform:rotate(-90deg)">' +
+        '<circle cx="' + center + '" cy="' + center + '" r="' + r + '" fill="none" stroke="#EFF4FA" stroke-width="' + stroke + '"/>' +
+        '<circle cx="' + center + '" cy="' + center + '" r="' + r + '" fill="none" stroke="' + tier.color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + offset + '" style="transition:stroke-dashoffset .8s ease"/>' +
+      '</svg>' +
+      '<span style="position:absolute;font-family:\'DM Serif Display\',serif;font-size:' + fontSize + 'px;font-weight:400;color:#111827">' + score + '</span>' +
+    '</div>';
+  }
+
   function calcScore(d) {
-    const segScore = Math.min((parseInt(d.seguidores) || 0) / 10000 * 10, 10);
-    return Math.round(segScore);
+    const niveles = nivelesPorEmail[(d.email || '').toLowerCase()];
+    const nivelesCount = niveles ? niveles.size : 0;
+    const camInfo = campanasPorCreador[d.id] || { pagadas: 0, marcas: new Set() };
+
+    const formacion   = Math.min(nivelesCount / 6 * 40, 40);
+    const antiguedad  = Math.min(mesesActivoScore(d.fecha), 20);
+    const campanas    = Math.min(camInfo.pagadas * 2, 20);
+    const alcance     = Math.min((parseInt(d.seguidores) || 0) / 50000 * 10, 10);
+    const diversidad  = Math.min(camInfo.marcas.size * 2, 10);
+
+    return Math.min(Math.round(formacion + antiguedad + campanas + alcance + diversidad), 100);
   }
 
   function updateStats() {
@@ -770,14 +832,13 @@ tr:hover .row-actions{opacity:1}
     let rows = '';
     data.forEach(function(d) {
       const score = calcScore(d);
-      const scoreClass = score >= 60 ? 'score-hi' : score >= 30 ? 'score-mid' : 'score-lo';
       rows += '<tr>' +
         '<td><div class="td-name">' + (d.nombre||'—') + '</div><div class="td-meta">' + (d.email||'') + '</div></td>' +
         '<td>' + (d.ciudad||'—') + '</td>' +
         '<td>' + (d.nicho||'—') + '</td>' +
         '<td>' + (d.redes||'—') + '</td>' +
         '<td>' + formatSeg(d.seguidores) + '</td>' +
-        '<td><span class="score-pill ' + scoreClass + '">' + score + '</span></td>' +
+        '<td>' + scoreRing(score, 34, 3.5) + '</td>' +
         '<td>' + formatFecha(d.fecha) + '</td>' +
         '<td>' + statusBadge(d.status) + '</td>' +
         '<td><div class="row-actions">' +
@@ -850,6 +911,16 @@ tr:hover .row-actions{opacity:1}
     const d = allData.find(x => x.id === id);
     if (!d) return;
     const score = calcScore(d);
+    const tier = tierForScore(score);
+    const niveles = nivelesPorEmail[(d.email || '').toLowerCase()];
+    const nivelesCount = niveles ? niveles.size : 0;
+    const camInfo = campanasPorCreador[d.id] || { pagadas: 0, marcas: new Set() };
+    const formacion  = Math.min(nivelesCount / 6 * 40, 40);
+    const antiguedad = Math.min(mesesActivoScore(d.fecha), 20);
+    const campEl     = Math.min(camInfo.pagadas * 2, 20);
+    const alcance    = Math.min((parseInt(d.seguidores) || 0) / 50000 * 10, 10);
+    const diversidad = Math.min(camInfo.marcas.size * 2, 10);
+
     document.getElementById('modal-body').innerHTML =
       '<div class="modal-title">' + (d.nombre||'—') + '</div>' +
       '<div class="modal-sub">' + formatFecha(d.fecha) + ' · ' + statusBadge(d.status) + '</div>' +
@@ -862,10 +933,18 @@ tr:hover .row-actions{opacity:1}
       '<div class="modal-row"><div class="modal-label">Seguidores</div><div class="modal-val">' + formatSeg(d.seguidores) + '</div></div>' +
       '<div class="modal-row"><div class="modal-label">¿Por qué Climblight?</div><div class="modal-val">' + (d.razon||'—') + '</div></div>' +
       '<div class="modal-section">Climblight Score</div>' +
-      '<div class="score-breakdown">' +
-        '<div class="sb-row"><div class="sb-lbl">Alcance</div><div class="sb-bar"><div class="sb-fill" style="width:' + Math.min((parseInt(d.seguidores)||0)/10000*100,100) + '%"></div></div><div class="sb-val">' + score + '</div></div>' +
+      '<div style="display:flex;align-items:center;gap:18px;margin-bottom:16px">' +
+        scoreRing(score, 92, 8) +
+        '<div><div style="font-family:\'DM Serif Display\',serif;font-style:italic;font-size:16px;color:#1B3A5C">' + tier.name + '</div>' +
+        '<div style="font-size:12px;color:#6B7280;margin-top:2px">' + score + ' de 100 puntos</div></div>' +
       '</div>' +
-      '<div class="score-total-row"><div class="score-total-lbl">Score actual</div><div class="score-total-num">' + score + ' / 100</div></div>' +
+      '<div class="score-breakdown">' +
+        '<div class="sb-row"><div class="sb-lbl">Formación</div><div class="sb-bar"><div class="sb-fill" style="width:' + (formacion/40*100) + '%"></div></div><div class="sb-val">' + Math.round(formacion) + '/40</div></div>' +
+        '<div class="sb-row"><div class="sb-lbl">Antigüedad activa</div><div class="sb-bar"><div class="sb-fill" style="width:' + (antiguedad/20*100) + '%"></div></div><div class="sb-val">' + Math.round(antiguedad) + '/20</div></div>' +
+        '<div class="sb-row"><div class="sb-lbl">Campañas pagadas</div><div class="sb-bar"><div class="sb-fill" style="width:' + (campEl/20*100) + '%"></div></div><div class="sb-val">' + Math.round(campEl) + '/20</div></div>' +
+        '<div class="sb-row"><div class="sb-lbl">Alcance</div><div class="sb-bar"><div class="sb-fill" style="width:' + (alcance/10*100) + '%"></div></div><div class="sb-val">' + Math.round(alcance) + '/10</div></div>' +
+        '<div class="sb-row"><div class="sb-lbl">Diversidad de marcas</div><div class="sb-bar"><div class="sb-fill" style="width:' + (diversidad/10*100) + '%"></div></div><div class="sb-val">' + Math.round(diversidad) + '/10</div></div>' +
+      '</div>' +
       '<div class="modal-section">Ganancias</div>' +
       (function() {
         const info = campanasPorCreador[d.id];
