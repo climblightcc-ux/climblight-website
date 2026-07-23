@@ -166,6 +166,14 @@ tr:hover .row-actions{opacity:1}
     <button class="sb-item" onclick="switchModule('blusym'); setFilter('nuevo', this)">● Nuevas</button>
     <button class="sb-item" onclick="switchModule('blusym'); setFilter('contactado', this)">● Contactadas</button>
     <button class="sb-item" onclick="switchModule('blusym'); setFilter('activo', this)">● Activas</button>
+    <div class="sb-label" style="margin-top:18px">Interés en creadores</div>
+    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('todos', this)">
+      ◈ Todas
+      <span class="sb-badge" id="badge-solicitudes">0</span>
+    </button>
+    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('nuevo', this)">● Nuevas</button>
+    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('contactado', this)">● Contactadas</button>
+    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('cerrado', this)">● Cerradas</button>
   </nav>
   <div class="sb-footer">
     <div class="sb-status">
@@ -221,6 +229,14 @@ tr:hover .row-actions{opacity:1}
       <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaBlusym()" id="search-blusym">
     </div>
 
+    <div class="filters" id="filters-solicitudes" style="display:none">
+      <button class="filter-btn active" onclick="setFilter('todos',this)">Todas</button>
+      <button class="filter-btn" onclick="setFilter('nuevo',this)">Nuevas</button>
+      <button class="filter-btn" onclick="setFilter('contactado',this)">Contactadas</button>
+      <button class="filter-btn" onclick="setFilter('cerrado',this)">Cerradas</button>
+      <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaSolicitudes()" id="search-solicitudes">
+    </div>
+
     <div class="table-wrap" id="table-wrap">
       <div class="loading-state"><div class="spinner-lg"></div>Cargando desde Supabase…</div>
     </div>
@@ -258,6 +274,7 @@ tr:hover .row-actions{opacity:1}
   let campanasPorCreador = {};
   let allAliados = [];
   let allBlusym = [];
+  let allSolicitudes = [];
   let filtroActual = 'todos';
   let currentLink = '';
   let currentModule = 'creadores';
@@ -265,12 +282,13 @@ tr:hover .row-actions{opacity:1}
   function switchModule(mod) {
     currentModule = mod;
     filtroActual = 'todos';
-    document.getElementById('topbar-title').textContent = mod === 'creadores' ? 'Creadores registrados' : mod === 'aliados' ? 'Marcas aliadas · Passie' : 'Empresas creativas · Blusym';
+    document.getElementById('topbar-title').textContent = mod === 'creadores' ? 'Creadores registrados' : mod === 'aliados' ? 'Marcas aliadas · Passie' : mod === 'blusym' ? 'Empresas creativas · Blusym' : 'Interés en creadores · Solicitudes';
     document.getElementById('filters-creadores').style.display = mod === 'creadores' ? 'flex' : 'none';
     document.getElementById('filters-aliados').style.display = mod === 'aliados' ? 'flex' : 'none';
     document.getElementById('filters-blusym').style.display = mod === 'blusym' ? 'flex' : 'none';
+    document.getElementById('filters-solicitudes').style.display = mod === 'solicitudes' ? 'flex' : 'none';
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    const filtersId = mod === 'creadores' ? 'filters-creadores' : mod === 'aliados' ? 'filters-aliados' : 'filters-blusym';
+    const filtersId = mod === 'creadores' ? 'filters-creadores' : mod === 'aliados' ? 'filters-aliados' : mod === 'blusym' ? 'filters-blusym' : 'filters-solicitudes';
     const activeFilters = document.getElementById(filtersId);
     if (activeFilters) activeFilters.querySelector('.filter-btn').classList.add('active');
     if (mod === 'creadores') {
@@ -285,12 +303,18 @@ tr:hover .row-actions{opacity:1}
       document.getElementById('stat-lbl-3').textContent = 'Activas';
       document.getElementById('stat-lbl-4').textContent = 'Ciudades';
       updateStatsAliados(); renderTablaAliados();
-    } else {
+    } else if (mod === 'blusym') {
       document.getElementById('stat-lbl-1').textContent = 'Total empresas';
       document.getElementById('stat-lbl-2').textContent = 'Sin contactar';
       document.getElementById('stat-lbl-3').textContent = 'Activas';
       document.getElementById('stat-lbl-4').textContent = 'Ciudades';
       updateStatsBlusym(); renderTablaBlusym();
+    } else {
+      document.getElementById('stat-lbl-1').textContent = 'Total solicitudes';
+      document.getElementById('stat-lbl-2').textContent = 'Nuevas';
+      document.getElementById('stat-lbl-3').textContent = 'Cerradas';
+      document.getElementById('stat-lbl-4').textContent = 'Marcas distintas';
+      updateStatsSolicitudes(); renderTablaSolicitudes();
     }
   }
 
@@ -513,6 +537,112 @@ tr:hover .row-actions{opacity:1}
       '<div class="modal-actions">' +
         '<button class="btn-sm btn-navy" onclick="updateStatusAliado(\'' + d.id + '\',\'Creador Asignado\');closeModalBtn()">Asignar creador</button>' +
         '<button class="btn-sm btn-outline" onclick="updateStatusAliado(\'' + d.id + '\',\'Activo\');closeModalBtn()">Marcar activa</button>' +
+      '</div>';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  async function loadSolicitudes() {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/solicitudes_creador?select=*&order=id.desc', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      if (!res.ok) throw new Error('Error ' + res.status);
+      allSolicitudes = await res.json();
+      document.getElementById('badge-solicitudes').textContent = allSolicitudes.length;
+      if (currentModule === 'solicitudes') { updateStatsSolicitudes(); renderTablaSolicitudes(); }
+    } catch(e) {
+      console.error('Error cargando solicitudes:', e);
+    }
+  }
+
+  function updateStatsSolicitudes() {
+    document.getElementById('stat-total').textContent = allSolicitudes.length;
+    document.getElementById('stat-nuevos').textContent = allSolicitudes.filter(d => d.status === 'nuevo').length;
+    document.getElementById('stat-activos').textContent = allSolicitudes.filter(d => d.status === 'cerrado').length;
+    const marcas = {};
+    allSolicitudes.forEach(d => { if (d.marca) marcas[d.marca.toLowerCase()] = true; });
+    document.getElementById('stat-ciudades').textContent = Object.keys(marcas).length;
+  }
+
+  function getFilteredSolicitudes() {
+    const q = (document.getElementById('search-solicitudes')?.value || '').toLowerCase();
+    return allSolicitudes.filter(d => {
+      const mf = filtroActual === 'todos' || d.status === filtroActual;
+      const ms = !q || (d.marca||'').toLowerCase().includes(q) || (d.creator_nombre||'').toLowerCase().includes(q) || (d.contacto||'').toLowerCase().includes(q);
+      return mf && ms;
+    });
+  }
+
+  function statusBadgeSolicitud(s) {
+    const map = {nuevo:'s-nuevo',contactado:'s-contactado',cerrado:'s-activo'};
+    const labels = {nuevo:'Nueva',contactado:'Contactada',cerrado:'Cerrada'};
+    return '<span class="status ' + (map[s]||'s-nuevo') + '"><span class="status-dot"></span>' + (labels[s]||s) + '</span>';
+  }
+
+  function renderTablaSolicitudes() {
+    const data = getFilteredSolicitudes();
+    const wrap = document.getElementById('table-wrap');
+    if (!allSolicitudes.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin solicitudes todavía</div><p style="font-size:13px">Cuando una marca contacte a un creador desde el catálogo aparecerá aquí.</p></div>';
+      return;
+    }
+    if (!data.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div class="empty-title">Sin resultados</div><p style="font-size:13px">Intenta otro filtro.</p></div>';
+      return;
+    }
+
+    let rows = '';
+    data.forEach(function(d) {
+      rows += '<tr>' +
+        '<td><div class="td-name">' + (d.marca||'—') + '</div><div class="td-meta">' + (d.contacto||'') + '</div></td>' +
+        '<td>' + (d.creator_nombre||'—') + '</td>' +
+        '<td>' + (d.presupuesto||'—') + '</td>' +
+        '<td style="max-width:200px">' + (d.mensaje||'—') + '</td>' +
+        '<td>' + statusBadgeSolicitud(d.status) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="action-btn ab-gray" onclick="openModalSolicitud(' + d.id + ')">Ver</button>' +
+          '<button class="action-btn ab-yellow" onclick="updateStatusSolicitud(' + d.id + ',\'contactado\')">Contactar</button>' +
+          '<button class="action-btn ab-green" onclick="updateStatusSolicitud(' + d.id + ',\'cerrado\')">Cerrar</button>' +
+        '</div></td>' +
+        '</tr>';
+    });
+
+    wrap.innerHTML = '<table><thead><tr>' +
+      '<th>Marca</th><th>Creador de interés</th><th>Presupuesto</th><th>Mensaje</th><th>Estatus</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  async function updateStatusSolicitud(id, status) {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/solicitudes_creador?id=eq.' + id, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ status })
+      });
+      const idx = allSolicitudes.findIndex(d => d.id === id);
+      if (idx >= 0) allSolicitudes[idx].status = status;
+      updateStatsSolicitudes(); renderTablaSolicitudes();
+      showToast('Estatus actualizado → ' + status);
+    } catch { showToast('Error al actualizar'); }
+  }
+
+  function openModalSolicitud(id) {
+    const d = allSolicitudes.find(x => x.id === id);
+    if (!d) return;
+    document.getElementById('modal-body').innerHTML =
+      '<div class="modal-title">' + (d.marca||'—') + '</div>' +
+      '<div class="modal-sub">' + formatFecha(d.fecha) + ' · ' + statusBadgeSolicitud(d.status) + '</div>' +
+      '<div class="modal-section">Interesados en</div>' +
+      '<div class="modal-row"><div class="modal-label">Creador</div><div class="modal-val">' + (d.creator_nombre||'—') + '</div></div>' +
+      '<div class="modal-section">Contacto de la marca</div>' +
+      '<div class="modal-row"><div class="modal-label">Nombre</div><div class="modal-val">' + (d.contacto||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">WhatsApp</div><div class="modal-val">' + (d.whatsapp||'—') + '</div></div>' +
+      '<div class="modal-section">El proyecto</div>' +
+      '<div class="modal-row"><div class="modal-label">Presupuesto</div><div class="modal-val">' + (d.presupuesto||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Mensaje</div><div class="modal-val">' + (d.mensaje||'—') + '</div></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn-sm btn-navy" onclick="updateStatusSolicitud(' + d.id + ',\'contactado\');closeModalBtn()">Marcar contactada</button>' +
+        '<button class="btn-sm btn-outline" onclick="updateStatusSolicitud(' + d.id + ',\'cerrado\');closeModalBtn()">Marcar cerrada</button>' +
       '</div>';
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -786,6 +916,19 @@ tr:hover .row-actions{opacity:1}
       showToast('CSV exportado');
       return;
     }
+    if (currentModule === 'solicitudes') {
+      const data = getFilteredSolicitudes();
+      if (!data.length) { showToast('Sin datos'); return; }
+      const headers = ['Marca','Contacto','WhatsApp','Creador de interés','Presupuesto','Mensaje','Estatus','Fecha'];
+      const rows = data.map(d => [d.marca,d.contacto,d.whatsapp,d.creator_nombre,d.presupuesto,d.mensaje,d.status,d.fecha].map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+      const csv = [headers.join(',')].concat(rows).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+      a.download = 'climblight-solicitudes.csv';
+      a.click();
+      showToast('CSV exportado');
+      return;
+    }
     const data = getFiltered();
     if (!data.length) { showToast('Sin datos'); return; }
     const headers = ['Nombre','Email','WhatsApp','Ciudad','Nicho','Seguidores','Redes','Fecha','Estatus'];
@@ -808,6 +951,7 @@ tr:hover .row-actions{opacity:1}
   loadData();
   loadAliados();
   loadBlusym();
+  loadSolicitudes();
 </script>
 </body>
 </html>

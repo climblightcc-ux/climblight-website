@@ -30,6 +30,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .nav-tab.active{background:var(--navy);color:white}
 .nav-tab:hover:not(.active){color:var(--ink)}
 
+.nav-dropdown{position:relative}
+.nav-dropdown-panel{position:absolute;top:calc(100% + 10px);left:0;background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 40px rgba(17,24,39,.14);padding:6px;min-width:210px;display:none;flex-direction:column;gap:2px;z-index:200}
+.nav-dropdown:hover .nav-dropdown-panel,.nav-dropdown.open .nav-dropdown-panel{display:flex}
+.nav-dropdown-panel button{text-align:left;padding:10px 14px;border-radius:9px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.nav-dropdown-panel button:hover{background:var(--navy-bg);color:var(--navy)}
+
 .view{display:none}
 .view.active{display:block}
 
@@ -47,6 +53,38 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .subtab{padding:9px 20px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--gray);transition:all .2s;font-family:'DM Sans',sans-serif}
 .subtab.active{background:var(--navy);color:white;border-color:var(--navy)}
 .subtab:hover:not(.active){border-color:var(--navy-l);color:var(--ink)}
+
+.catalogo-wrap{max-width:1080px;margin:0 auto;padding:0 40px 80px}
+.catalogo-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.sort-tabs{display:flex;gap:4px;background:var(--off);border-radius:100px;padding:4px}
+.sort-tab{padding:8px 18px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--gray);font-family:'DM Sans',sans-serif;transition:all .2s}
+.sort-tab.active{background:var(--navy);color:white}
+.catalogo-count{font-size:12px;color:var(--gray-l)}
+
+.creators-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.creator-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:20px;transition:border-color .2s}
+.creator-card:hover{border-color:var(--navy-l)}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:8px}
+.cc-photo{width:46px;height:46px;border-radius:12px;background:var(--navy-bg);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:16px;overflow:hidden;flex-shrink:0}
+.cc-photo img{width:100%;height:100%;object-fit:cover}
+.cc-tier{padding:4px 10px;border-radius:100px;font-size:9.5px;font-weight:700;white-space:nowrap;letter-spacing:.02em}
+.cc-tier-base{background:var(--off);color:var(--gray)}
+.cc-tier-activo{background:var(--navy-bg);color:var(--navy)}
+.cc-tier-top{background:var(--navy);color:white}
+.cc-tier-elite{background:#FBF3E1;color:#B8862B}
+.cc-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--ink);margin-bottom:2px;letter-spacing:-.2px}
+.cc-meta{font-size:12px;color:var(--gray);margin-bottom:14px}
+.cc-score-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px}
+.cc-score-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink)}
+.cc-score-lbl{font-size:9.5px;color:var(--gray-l);text-transform:uppercase;letter-spacing:.06em}
+.cc-contact-btn{width:100%;padding:9px;background:var(--navy);color:white;border:none;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.cc-contact-btn:hover{background:var(--navy-d)}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:white;border-radius:20px;padding:32px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 60px rgba(17,24,39,.2)}
+.modal-close-btn{position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;color:var(--gray-l);cursor:pointer;line-height:1}
+.modal-close-btn:hover{color:var(--ink)}
 
 .main{max-width:1080px;margin:0 auto;padding:52px 40px 80px;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
 
@@ -139,7 +177,14 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
   <div class="nav-inner">
     <div class="logo-text">Climblight</div>
     <div class="nav-tabs">
-      <button class="nav-tab active" data-brand="climblight" onclick="switchBrand('climblight',this)">Climblight</button>
+      <div class="nav-dropdown" id="nav-dropdown-creators">
+        <button class="nav-tab active" data-brand="climblight" onclick="toggleDropdown(event)">Creators ▾</button>
+        <div class="nav-dropdown-panel">
+          <button onclick="switchView('registro')">Registro</button>
+          <button onclick="switchView('cursos')">Registro de cursos</button>
+          <button onclick="switchView('catalogo')">Catálogo de creadores</button>
+        </div>
+      </div>
       <button class="nav-tab" data-brand="blusym" onclick="switchBrand('blusym',this)">Blusym</button>
       <button class="nav-tab" data-brand="passie" onclick="switchBrand('passie',this)">Passie</button>
     </div>
@@ -162,6 +207,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
   <div class="subtab-row">
     <button class="subtab active" onclick="switchView('registro')">Únete a la red</button>
     <button class="subtab" onclick="switchView('cursos')">Inscríbete a un curso</button>
+    <button class="subtab" onclick="switchView('catalogo')">Catálogo de creadores</button>
   </div>
 </section>
 
@@ -331,6 +377,7 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
     <div class="subtab-row">
       <button class="subtab" onclick="switchView('registro')">Únete a la red</button>
       <button class="subtab active" onclick="switchView('cursos')">Inscríbete a un curso</button>
+      <button class="subtab" onclick="switchView('catalogo')">Catálogo de creadores</button>
     </div>
   </section>
 
@@ -435,6 +482,93 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
   </div>
 </div>
 <!-- /view-cursos -->
+
+<!-- ═══════════ VIEW: CATÁLOGO ═══════════ -->
+<div class="view" id="view-catalogo">
+
+<section class="hero">
+  <div class="hero-eyebrow">Climblight Creators · Catálogo</div>
+  <h1 class="hero-h1">
+    Encuentra al<br>
+    <em>creador</em><br>
+    ideal para tu marca.
+  </h1>
+  <p class="hero-tagline">
+    <strong>Perfiles verificados.</strong> Contáctanos para trabajar con creadores de tu ciudad.
+  </p>
+  <div class="subtab-row">
+    <button class="subtab" onclick="switchView('registro')">Únete a la red</button>
+    <button class="subtab" onclick="switchView('cursos')">Inscríbete a un curso</button>
+    <button class="subtab active" onclick="switchView('catalogo')">Catálogo de creadores</button>
+  </div>
+</section>
+
+<hr class="divider">
+
+<div class="catalogo-wrap">
+  <div class="catalogo-toolbar">
+    <div class="sort-tabs">
+      <button class="sort-tab active" id="sort-score" onclick="setSortMode('score')">Más activos</button>
+      <button class="sort-tab" id="sort-alpha" onclick="setSortMode('alpha')">A → Z</button>
+    </div>
+    <div class="catalogo-count" id="catalogo-count"></div>
+  </div>
+  <div class="creators-grid" id="catalogo-grid">
+    <div class="loading-state"><div class="spinner-lg"></div>Cargando creadores…</div>
+  </div>
+</div>
+
+</div>
+<!-- /view-catalogo -->
+
+<!-- MODAL: CONTACTAR CREADOR -->
+<div class="modal-overlay" id="contact-modal-overlay" onclick="closeContactModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeContactModalBtn()">×</button>
+    <div id="contact-form-state">
+      <div class="form-title" id="contact-modal-title">Contactar creador</div>
+      <div class="form-sub">Déjanos tus datos. Climblight coordina el primer contacto — protegemos la privacidad del creador.</div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Marca / Empresa *</label>
+          <input type="text" id="s-marca" placeholder="Nombre de tu marca">
+        </div>
+        <div class="field">
+          <label>Tu nombre *</label>
+          <input type="text" id="s-contacto" placeholder="Nombre completo">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>WhatsApp *</label>
+          <input type="tel" id="s-whatsapp" placeholder="+52 664 000 0000">
+        </div>
+        <div class="field">
+          <label>Presupuesto aproximado</label>
+          <input type="text" id="s-presupuesto" placeholder="Ej. $3,000 - $5,000 MXN">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Cuéntanos de tu proyecto (opcional)</label>
+        <textarea id="s-mensaje" placeholder="Ej. Buscamos un reel de producto para lanzamiento..."></textarea>
+      </div>
+
+      <button class="btn-submit" id="btn-solicitud-submit" onclick="submitSolicitud()">
+        <div class="spinner"></div>
+        <span class="btn-text">Enviar solicitud →</span>
+      </button>
+      <div class="error-msg" id="solicitud-error-msg"></div>
+    </div>
+
+    <div class="success-state" id="contact-success-state">
+      <div class="success-icon">✦</div>
+      <div class="success-title">¡Solicitud enviada!</div>
+      <p class="success-sub">Recibimos tu interés. Climblight te contacta pronto para coordinar con el creador.</p>
+      <div class="success-tag">En revisión por Climblight</div>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════ VIEW: BLUSYM ═══════════ -->
 <div class="view" id="view-blusym">
@@ -734,8 +868,16 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
   const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
   let redesSeleccionadas = [];
 
-  const viewToBrand = { registro: 'climblight', cursos: 'climblight', blusym: 'blusym', aliados: 'passie' };
+  const viewToBrand = { registro: 'climblight', cursos: 'climblight', catalogo: 'climblight', blusym: 'blusym', aliados: 'passie' };
   const brandDefaultView = { climblight: 'registro', blusym: 'blusym', passie: 'aliados' };
+
+  function toggleDropdown(e) {
+    e.stopPropagation();
+    document.getElementById('nav-dropdown-creators').classList.toggle('open');
+  }
+  document.addEventListener('click', function() {
+    document.getElementById('nav-dropdown-creators')?.classList.remove('open');
+  });
 
   function switchView(view) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -747,6 +889,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
       const match = s.getAttribute('onclick') === "switchView('" + view + "')";
       s.classList.toggle('active', match);
     });
+    document.getElementById('nav-dropdown-creators')?.classList.remove('open');
+
+    if (view === 'catalogo') loadCatalogo();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1041,6 +1186,195 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
       }
     } catch(e) {
       const errEl = document.getElementById('error-msg');
+      errEl.textContent = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  // ═══════════ CATÁLOGO DE CREADORES ═══════════
+
+  let catalogoData = [];
+  let sortMode = 'score';
+  let contactCreator = null;
+
+  function mesesActivoCat(fecha) {
+    if (!fecha) return 0;
+    const start = new Date(fecha);
+    if (isNaN(start)) return 0;
+    const now = new Date();
+    return Math.max((now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()), 0);
+  }
+
+  function tierForCat(score) {
+    if (score >= 90) return { key: 'elite', name: 'Elite Creator' };
+    if (score >= 70) return { key: 'top', name: 'Top Creator' };
+    if (score >= 40) return { key: 'activo', name: 'Creador Activo' };
+    return { key: 'base', name: 'Creador Climblight' };
+  }
+
+  function initialsCat(nombre) {
+    if (!nombre) return '?';
+    return nombre.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+
+  async function loadCatalogo() {
+    const wrap = document.getElementById('catalogo-grid');
+    wrap.innerHTML = '<div class="loading-state"><div class="spinner-lg"></div>Cargando creadores…</div>';
+    const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
+    try {
+      const [credRes, insRes, camRes] = await Promise.all([
+        fetch(SUPABASE_URL + '/rest/v1/Creators?status=eq.activo&select=*', { headers: H }),
+        fetch(SUPABASE_URL + '/rest/v1/Inscripciones?status=eq.completado&select=email,nivel', { headers: H }),
+        fetch(SUPABASE_URL + '/rest/v1/Campanas?status=eq.completada&select=creator_id,marca,tipo', { headers: H })
+      ]);
+      if (!credRes.ok) throw new Error();
+      const creators = await credRes.json();
+      const inscripciones = insRes.ok ? await insRes.json() : [];
+      const campanas = camRes.ok ? await camRes.json() : [];
+
+      const nivelesPorEmail = {};
+      inscripciones.forEach(i => {
+        const key = (i.email || '').toLowerCase();
+        if (!nivelesPorEmail[key]) nivelesPorEmail[key] = new Set();
+        nivelesPorEmail[key].add(i.nivel);
+      });
+
+      const campanasPorCreator = {};
+      campanas.forEach(c => {
+        if (!campanasPorCreator[c.creator_id]) campanasPorCreator[c.creator_id] = { pagadas: 0, marcas: new Set() };
+        if ((c.tipo || '').toLowerCase() === 'pagada') campanasPorCreator[c.creator_id].pagadas++;
+        if (c.marca) campanasPorCreator[c.creator_id].marcas.add(c.marca.toLowerCase().trim());
+      });
+
+      catalogoData = creators.map(d => {
+        const niveles = nivelesPorEmail[(d.email || '').toLowerCase()];
+        const nivelesCount = niveles ? niveles.size : 0;
+        const camInfo = campanasPorCreator[d.id] || { pagadas: 0, marcas: new Set() };
+
+        const formacion = Math.min(nivelesCount / 6 * 40, 40);
+        const antiguedad = Math.min(mesesActivoCat(d.fecha), 20);
+        const campEl = Math.min(camInfo.pagadas * 2, 20);
+        const alcance = Math.min((parseInt(d.seguidores) || 0) / 50000 * 10, 10);
+        const diversidad = Math.min(camInfo.marcas.size * 2, 10);
+        const total = Math.min(Math.round(formacion + antiguedad + campEl + alcance + diversidad), 100);
+
+        return { id: d.id, nombre: d.nombre || 'Creador', ciudad: d.ciudad, nicho: d.nicho, foto_url: d.foto_url, score: total };
+      });
+
+      renderCatalogo();
+    } catch (e) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-title">No se pudo cargar el catálogo</div><p style="font-size:13px;color:var(--gray)">Intenta de nuevo en un momento.</p></div>';
+    }
+  }
+
+  function setSortMode(mode) {
+    sortMode = mode;
+    document.getElementById('sort-score').classList.toggle('active', mode === 'score');
+    document.getElementById('sort-alpha').classList.toggle('active', mode === 'alpha');
+    renderCatalogo();
+  }
+
+  function renderCatalogo() {
+    const wrap = document.getElementById('catalogo-grid');
+    document.getElementById('catalogo-count').textContent = catalogoData.length + ' creador' + (catalogoData.length === 1 ? '' : 'es');
+
+    if (!catalogoData.length) {
+      wrap.innerHTML = '<div class="empty"><div class="empty-title">Sin creadores activos todavía</div><p style="font-size:13px;color:var(--gray)">Muy pronto verás aquí a los creadores de la red.</p></div>';
+      return;
+    }
+
+    const sorted = [...catalogoData].sort((a, b) => {
+      if (sortMode === 'alpha') return a.nombre.localeCompare(b.nombre, 'es');
+      return b.score - a.score;
+    });
+
+    wrap.innerHTML = sorted.map(function(d) {
+      const tier = tierForCat(d.score);
+      const photo = d.foto_url ? '<img src="' + d.foto_url + '" alt="">' : initialsCat(d.nombre);
+      return '<div class="creator-card">' +
+        '<div class="cc-top">' +
+          '<div class="cc-photo">' + photo + '</div>' +
+          '<div class="cc-tier cc-tier-' + tier.key + '">' + tier.name + '</div>' +
+        '</div>' +
+        '<div class="cc-name">' + d.nombre + '</div>' +
+        '<div class="cc-meta">' + (d.ciudad || '—') + (d.nicho ? ' · ' + d.nicho : '') + '</div>' +
+        '<div class="cc-score-row">' +
+          '<div class="cc-score-lbl">Climblight Score</div>' +
+          '<div class="cc-score-num">' + d.score + '</div>' +
+        '</div>' +
+        '<button class="cc-contact-btn" onclick="openContactModal(' + d.id + ',\'' + d.nombre.replace(/'/g, "") + '\')">Contactar</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function openContactModal(id, nombre) {
+    contactCreator = { id, nombre };
+    document.getElementById('contact-modal-title').textContent = 'Contactar a ' + nombre;
+    document.getElementById('contact-form-state').style.display = 'block';
+    document.getElementById('contact-success-state').style.display = 'none';
+    document.getElementById('solicitud-error-msg').style.display = 'none';
+    ['s-marca','s-contacto','s-whatsapp','s-presupuesto','s-mensaje'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('contact-modal-overlay').classList.add('open');
+  }
+
+  function closeContactModal(e) { if (e.target === document.getElementById('contact-modal-overlay')) closeContactModalBtn(); }
+  function closeContactModalBtn() { document.getElementById('contact-modal-overlay').classList.remove('open'); }
+
+  async function submitSolicitud() {
+    document.getElementById('solicitud-error-msg').style.display = 'none';
+    const marca = document.getElementById('s-marca').value.trim();
+    const contacto = document.getElementById('s-contacto').value.trim();
+    const whatsapp = document.getElementById('s-whatsapp').value.trim();
+
+    if (!marca || !contacto || !whatsapp) {
+      const err = document.getElementById('solicitud-error-msg');
+      err.textContent = 'Completa los campos obligatorios (*)';
+      err.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-solicitud-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const registro = {
+      creator_id: contactCreator.id,
+      creator_nombre: contactCreator.nombre,
+      marca, contacto, whatsapp,
+      presupuesto: document.getElementById('s-presupuesto').value.trim() || null,
+      mensaje: document.getElementById('s-mensaje').value.trim() || null,
+      status: 'nuevo',
+      fecha: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/solicitudes_creador', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(registro)
+      });
+
+      if (res.ok || res.status === 201) {
+        document.getElementById('contact-form-state').style.display = 'none';
+        document.getElementById('contact-success-state').style.display = 'block';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        const errEl = document.getElementById('solicitud-error-msg');
+        errEl.textContent = 'Error al enviar. Intenta de nuevo. (' + (err.message || err.error || res.status) + ')';
+        errEl.style.display = 'block';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    } catch (e) {
+      const errEl = document.getElementById('solicitud-error-msg');
       errEl.textContent = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
       errEl.style.display = 'block';
       btn.classList.remove('loading');
