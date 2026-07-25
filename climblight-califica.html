@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climblight — Califica al creador</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1B3A5C;--navy-d:#122840;--navy-bg:#EFF4FA;
+  --white:#FFFFFF;--off:#F8F9FA;--ink:#111827;
+  --gray:#6B7280;--gray-l:#9CA3AF;--border:#E5E7EB;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:560px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.logo{font-family:'DM Serif Display',serif;font-size:19px;color:var(--navy);margin-bottom:28px;text-align:center}
+.title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--ink);margin-bottom:4px;letter-spacing:-.3px}
+.sub{font-size:13px;color:var(--gray);margin-bottom:24px;line-height:1.5}
+.creator-banner{background:var(--navy-bg);border:1px solid rgba(27,58,92,.15);border-radius:12px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.creator-avatar{width:36px;height:36px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.creator-name{font-size:13px;font-weight:600;color:var(--navy)}
+.creator-meta{font-size:11px;color:var(--gray)}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+label{font-size:11px;font-weight:600;color:var(--gray);letter-spacing:.03em}
+select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;background:var(--off);color:var(--ink)}
+select:focus,textarea:focus{border-color:var(--navy);background:var(--white)}
+textarea::placeholder{color:#D1D5DB}
+select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-color:var(--off)}
+textarea{resize:none;min-height:90px}
+.stars{display:flex;gap:8px;margin-bottom:16px}
+.star{width:40px;height:40px;border-radius:10px;border:1.5px solid var(--border);background:var(--off);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;transition:all .15s}
+.star.active{border-color:var(--navy);background:var(--navy-bg)}
+.btn-submit{width:100%;padding:14px;background:var(--navy);color:var(--white);border:none;border-radius:100px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{background:var(--navy-d)}
+.btn-submit:disabled{background:var(--gray-l);cursor:not-allowed}
+.spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.btn-submit.loading .spinner{display:block}
+.btn-submit.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-msg{font-size:12px;color:#DC2626;margin-top:8px;display:none;padding:10px 14px;background:#FEF2F2;border-radius:8px;border:1px solid #FECACA}
+.success-state{display:none;text-align:center;padding:20px 0}
+.success-icon{width:64px;height:64px;background:var(--navy-bg);border:2px solid var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px}
+.success-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--gray);line-height:1.7}
+.loading-state{text-align:center;padding:40px 0;color:var(--gray)}
+.spinner-lg{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+.invalid-state{text-align:center;padding:20px 0}
+.invalid-icon{font-size:36px;margin-bottom:14px}
+.invalid-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);margin-bottom:8px}
+.invalid-sub{font-size:13px;color:var(--gray);line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">Climblight</div>
+
+  <div class="loading-state" id="loading-state">
+    <div class="spinner-lg"></div>
+    Verificando tu link...
+  </div>
+
+  <div id="main-content" style="display:none">
+    <div class="title">Califica a tu creador</div>
+    <div class="sub">Tu opinión ayuda a otras marcas a decidir con confianza. Toma menos de un minuto.</div>
+
+    <div class="creator-banner">
+      <div class="creator-avatar" id="creator-initials">--</div>
+      <div>
+        <div class="creator-name" id="creator-name">Cargando...</div>
+        <div class="creator-meta" id="creator-meta">Climblight Creator</div>
+      </div>
+    </div>
+
+    <div id="form-state">
+      <div class="field">
+        <label>¿Cómo calificarías el trabajo de este creador? *</label>
+        <div class="stars" id="stars">
+          <div class="star" onclick="setStar(1)">⭐</div>
+          <div class="star" onclick="setStar(2)">⭐</div>
+          <div class="star" onclick="setStar(3)">⭐</div>
+          <div class="star" onclick="setStar(4)">⭐</div>
+          <div class="star" onclick="setStar(5)">⭐</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>¿Volverías a contratar a este creador? *</label>
+        <select id="f-repetir">
+          <option value="">Selecciona</option>
+          <option value="si">Sí, definitivamente</option>
+          <option value="tal_vez">Tal vez</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Cuéntanos tu experiencia (puede aparecer como testimonio público)</label>
+        <textarea id="f-comentario" placeholder="Ej. Entregó a tiempo y entendió muy bien el tono de nuestra marca..."></textarea>
+      </div>
+
+      <button class="btn-submit" id="btn-submit" onclick="submitCalificacion()">
+        <div class="spinner"></div>
+        <span class="btn-text">Enviar calificación →</span>
+      </button>
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+
+    <div class="success-state" id="success-state">
+      <div class="success-icon">✦</div>
+      <div class="success-title">¡Gracias por tu opinión!</div>
+      <p class="success-sub">Tu calificación ayuda a que otras marcas encuentren al creador correcto.</p>
+    </div>
+  </div>
+
+  <div class="invalid-state" id="invalid-state" style="display:none">
+    <div class="invalid-icon">🔒</div>
+    <div class="invalid-title">Link no válido</div>
+    <p class="invalid-sub">Este link ya fue usado o no existe. Contacta a Climblight para recibir uno nuevo.</p>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://aaqwtrhjzkxovuvaayft.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
+
+  let campanaId = null;
+  let calificacion = 0;
+
+  function setStar(n) {
+    calificacion = n;
+    document.querySelectorAll('.star').forEach((s, i) => {
+      s.classList.toggle('active', i < n);
+    });
+  }
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) { showInvalid(); return; }
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Campanas?token_marca=eq.' + token + '&select=*', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      const data = await res.json();
+
+      if (!data.length || data[0].token_marca_usado) { showInvalid(); return; }
+
+      const campana = data[0];
+      campanaId = campana.id;
+
+      const creatorRes = await fetch(SUPABASE_URL + '/rest/v1/Creators?id=eq.' + campana.creator_id + '&select=nombre,ciudad,nicho', {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      });
+      const creators = await creatorRes.json();
+      const creator = creators[0] || {};
+      const nombre = creator.nombre || 'Creador';
+      const initials = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+      document.getElementById('creator-initials').textContent = initials;
+      document.getElementById('creator-name').textContent = nombre;
+      document.getElementById('creator-meta').textContent = 'Campaña con ' + (campana.marca || 'tu marca');
+
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    } catch(e) {
+      showInvalid();
+    }
+  }
+
+  function showInvalid() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('invalid-state').style.display = 'block';
+  }
+
+  async function submitCalificacion() {
+    document.getElementById('error-msg').style.display = 'none';
+    const repetir = document.getElementById('f-repetir').value;
+
+    if (!calificacion || !repetir) {
+      const err = document.getElementById('error-msg');
+      err.textContent = 'Completa los campos obligatorios (*)';
+      err.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('btn-submit');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      const updateRes = await fetch(SUPABASE_URL + '/rest/v1/Campanas?id=eq.' + campanaId, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          calificacion_marca: calificacion,
+          repetiria_marca: repetir,
+          comentario_marca: document.getElementById('f-comentario').value.trim() || null,
+          token_marca_usado: true
+        })
+      });
+
+      if (updateRes.ok) {
+        document.getElementById('form-state').style.display = 'none';
+        document.getElementById('success-state').style.display = 'block';
+      } else {
+        throw new Error('Error al guardar');
+      }
+    } catch(e) {
+      const errEl = document.getElementById('error-msg');
+      errEl.textContent = 'Error al enviar. Intenta de nuevo.';
+      errEl.style.display = 'block';
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

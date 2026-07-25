@@ -255,11 +255,11 @@ tr:hover .row-actions{opacity:1}
 <div class="modal-overlay" id="link-modal-overlay" onclick="closeLinkModal(event)">
   <div class="modal" style="max-width:420px">
     <button class="modal-close" onclick="closeLinkModalBtn()">×</button>
-    <div class="modal-title">Link de reporte</div>
+    <div class="modal-title" id="link-modal-title">Link de reporte</div>
     <div class="modal-sub" id="link-modal-sub">Generando link único…</div>
     <div class="link-box" id="link-box">—</div>
     <button class="link-copy-btn" id="link-copy-btn" onclick="copyLink()">Copiar link</button>
-    <p style="font-size:11px;color:var(--gray-l);margin-top:10px;text-align:center">Este link es de un solo uso. Cuando el creador lo llene, expira automáticamente.</p>
+    <p style="font-size:11px;color:var(--gray-l);margin-top:10px;text-align:center" id="link-modal-footnote">Este link es de un solo uso. Cuando el creador lo llene, expira automáticamente.</p>
   </div>
 </div>
 
@@ -593,8 +593,9 @@ tr:hover .row-actions{opacity:1}
 
     let rows = '';
     data.forEach(function(d) {
+      const tipoLbl = d.tipo_empresa === 'blusym' ? '🎬 Blusym' : d.tipo_empresa === 'passie' ? '🏪 Passie' : '—';
       rows += '<tr>' +
-        '<td><div class="td-name">' + (d.marca||'—') + '</div><div class="td-meta">' + (d.contacto||'') + '</div></td>' +
+        '<td><div class="td-name">' + (d.marca||'—') + '</div><div class="td-meta">' + tipoLbl + '</div></td>' +
         '<td>' + (d.creator_nombre||'—') + '</td>' +
         '<td>' + (d.presupuesto||'—') + '</td>' +
         '<td style="max-width:200px">' + (d.mensaje||'—') + '</td>' +
@@ -634,6 +635,7 @@ tr:hover .row-actions{opacity:1}
       '<div class="modal-sub">' + formatFecha(d.fecha) + ' · ' + statusBadgeSolicitud(d.status) + '</div>' +
       '<div class="modal-section">Interesados en</div>' +
       '<div class="modal-row"><div class="modal-label">Creador</div><div class="modal-val">' + (d.creator_nombre||'—') + '</div></div>' +
+      '<div class="modal-row"><div class="modal-label">Tipo de empresa</div><div class="modal-val">' + (d.tipo_empresa === 'blusym' ? '🎬 Blusym (empresa creativa)' : d.tipo_empresa === 'passie' ? '🏪 Passie (marca/negocio)' : '—') + '</div></div>' +
       '<div class="modal-section">Contacto de la marca</div>' +
       '<div class="modal-row"><div class="modal-label">Nombre</div><div class="modal-val">' + (d.contacto||'—') + '</div></div>' +
       '<div class="modal-row"><div class="modal-label">WhatsApp</div><div class="modal-val">' + (d.whatsapp||'—') + '</div></div>' +
@@ -682,7 +684,7 @@ tr:hover .row-actions{opacity:1}
     try {
       const [insRes, camRes] = await Promise.all([
         fetch(SUPABASE_URL + '/rest/v1/Inscripciones?status=eq.completado&select=email,nivel', { headers: H }),
-        fetch(SUPABASE_URL + '/rest/v1/Campanas?status=eq.completada&select=creator_id,marca,tipo,monto,fecha', { headers: H })
+        fetch(SUPABASE_URL + '/rest/v1/Campanas?status=eq.completada&select=id,creator_id,marca,tipo,monto,fecha,calificacion_marca,repetiria_marca,comentario_marca,token_marca_usado', { headers: H })
       ]);
 
       if (insRes.ok) {
@@ -706,7 +708,11 @@ tr:hover .row-actions{opacity:1}
           if (esPagada) {
             info.total += monto;
             info.pagadas += 1;
-            info.campanas.push({ marca: c.marca, monto, fecha: c.fecha });
+            info.campanas.push({
+              id: c.id, marca: c.marca, monto, fecha: c.fecha,
+              calificacion_marca: c.calificacion_marca, repetiria_marca: c.repetiria_marca,
+              comentario_marca: c.comentario_marca, token_marca_usado: c.token_marca_usado
+            });
           }
           if (c.marca) info.marcas.add(c.marca.toLowerCase().trim());
         });
@@ -870,6 +876,8 @@ tr:hover .row-actions{opacity:1}
   }
 
   async function generarLink(creatorId, nombre) {
+    document.getElementById('link-modal-title').textContent = 'Link de reporte';
+    document.getElementById('link-modal-footnote').textContent = 'Este link es de un solo uso. Cuando el creador lo llene, expira automáticamente.';
     document.getElementById('link-modal-sub').textContent = 'Generando link para ' + nombre + '…';
     document.getElementById('link-box').textContent = 'Generando…';
     document.getElementById('link-copy-btn').textContent = 'Copiar link';
@@ -888,6 +896,36 @@ tr:hover .row-actions{opacity:1}
       if (res.ok || res.status === 201) {
         currentLink = BASE_URL + '/climblight-reporte.html?token=' + token;
         document.getElementById('link-modal-sub').textContent = 'Link listo para ' + nombre + ' — de un solo uso.';
+        document.getElementById('link-box').textContent = currentLink;
+      } else {
+        throw new Error('Error al crear');
+      }
+    } catch(e) {
+      document.getElementById('link-box').textContent = 'Error al generar. Intenta de nuevo.';
+    }
+  }
+
+  async function generarLinkCalificacion(campanaId, marca, creatorNombre) {
+    document.getElementById('link-modal-title').textContent = 'Link de calificación';
+    document.getElementById('link-modal-footnote').textContent = 'Mándaselo a ' + marca + ' por WhatsApp. Es de un solo uso — expira al calificar.';
+    document.getElementById('link-modal-sub').textContent = 'Generando link para que ' + marca + ' califique a ' + creatorNombre + '…';
+    document.getElementById('link-box').textContent = 'Generando…';
+    document.getElementById('link-copy-btn').textContent = 'Copiar link';
+    document.getElementById('link-copy-btn').classList.remove('copied');
+    document.getElementById('link-modal-overlay').classList.add('open');
+
+    const token = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/Campanas?id=eq.' + campanaId, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ token_marca: token, token_marca_usado: false })
+      });
+
+      if (res.ok || res.status === 201) {
+        currentLink = BASE_URL + '/climblight-califica.html?token=' + token;
+        document.getElementById('link-modal-sub').textContent = 'Link listo para ' + marca + ' — de un solo uso.';
         document.getElementById('link-box').textContent = currentLink;
       } else {
         throw new Error('Error al crear');
@@ -951,9 +989,14 @@ tr:hover .row-actions{opacity:1}
         if (!info || !info.campanas.length) {
           return '<div class="modal-row"><div class="modal-label">Total ganado</div><div class="modal-val">$0 MXN · sin campañas pagadas aún</div></div>';
         }
-        const filas = info.campanas.map(c =>
-          '<div class="modal-row"><div class="modal-label">' + (c.marca || 'Marca') + '</div><div class="modal-val">' + formatMoney(c.monto) + '</div></div>'
-        ).join('');
+        const filas = info.campanas.map(c => {
+          const yaCalificada = c.calificacion_marca != null;
+          const estadoHtml = yaCalificada
+            ? '<div style="font-size:11px;color:var(--gray);margin-top:2px">' + '⭐'.repeat(c.calificacion_marca) + (c.comentario_marca ? ' · "' + c.comentario_marca + '"' : '') + '</div>'
+            : '<button class="action-btn ab-gray" style="margin-top:4px" onclick="generarLinkCalificacion(' + c.id + ',\'' + (c.marca||'').replace(/'/g,'') + '\',\'' + (d.nombre||'').replace(/'/g,'') + '\')">🔗 Pedir calificación</button>';
+          return '<div class="modal-row" style="align-items:flex-start"><div class="modal-label">' + (c.marca || 'Marca') + '</div>' +
+            '<div class="modal-val" style="text-align:right">' + formatMoney(c.monto) + estadoHtml + '</div></div>';
+        }).join('');
         return '<div class="modal-row"><div class="modal-label">Total ganado</div><div class="modal-val" style="font-weight:700">' + formatMoney(info.total) + ' · ' + info.campanas.length + ' campaña(s) pagada(s)</div></div>' + filas;
       })() +
       '<div class="modal-actions">' +
