@@ -1,0 +1,47 @@
+// Climblight — Generador de link para reclutar
+// Se agrega a cualquier página con: <script src="climblight-recruit-widget.js"></script>
+// Genera un token único cada vez que alguien entra a la página, y permite copiar
+// el link con ese token para mandárselo a la persona que se quiere reclutar.
+
+(function(){
+  function generarToken(){
+    return Math.random().toString(36).substring(2,10) + Math.random().toString(36).substring(2,10);
+  }
+
+  function init(){
+    var token = generarToken();
+    var link = window.location.origin + window.location.pathname + '?ref=' + token;
+
+    var wrap = document.createElement('div');
+    wrap.id = 'cl-recruit-widget';
+    wrap.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;font-family:"DM Sans",sans-serif';
+
+    var btn = document.createElement('button');
+    btn.id = 'cl-recruit-btn';
+    btn.textContent = '🔗 Link para reclutar';
+    btn.style.cssText = 'background:#1B3A5C;color:#fff;border:none;border-radius:100px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15)';
+
+    wrap.appendChild(btn);
+    document.body.appendChild(wrap);
+
+    btn.addEventListener('click', function(){
+      navigator.clipboard.writeText(link).then(function(){
+        var original = btn.textContent;
+        btn.textContent = '✓ Copiado';
+        btn.style.background = '#1D9E75';
+        setTimeout(function(){
+          btn.textContent = original;
+          btn.style.background = '#1B3A5C';
+          token = generarToken();
+          link = window.location.origin + window.location.pathname + '?ref=' + token;
+        }, 2000);
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
