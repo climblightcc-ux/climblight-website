@@ -898,7 +898,13 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
     document.getElementById('nav-dropdown-creators')?.classList.remove('open');
   });
 
-  function switchView(view) {
+  // Vistas válidas para deep linking por URL (#registro, #cursos, #catalogo, #blusym, #aliados)
+  const validViews = ['registro', 'cursos', 'catalogo', 'blusym', 'aliados'];
+
+  // Aplica la vista en pantalla (sin tocar la URL)
+  function applyView(view, scroll) {
+    if (!validViews.includes(view)) view = 'registro';
+
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + view).classList.add('active');
 
@@ -912,11 +918,35 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
 
     if (view === 'catalogo') loadCatalogo();
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scroll !== false) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Cambia de vista Y actualiza la URL
+  function switchView(view) {
+    if (!validViews.includes(view)) view = 'registro';
+    applyView(view);
+    if (location.hash.slice(1) !== view) {
+      history.pushState(null, '', '#' + view);
+    }
   }
 
   function switchBrand(brand) {
     switchView(brandDefaultView[brand]);
+  }
+
+  // Botón atrás/adelante del navegador
+  window.addEventListener('popstate', function() {
+    applyView(location.hash.slice(1), false);
+  });
+
+  // Al cargar: si la URL trae una sección, abrirla directamente
+  function initFromHash() {
+    const view = location.hash.slice(1);
+    if (validViews.includes(view)) {
+      applyView(view, false);
+    } else {
+      history.replaceState(null, '', '#registro');
+    }
   }
 
   let selectedCard = null;
@@ -1481,6 +1511,9 @@ footer{border-top:1px solid var(--border);padding:28px 40px;max-width:1080px;mar
       btn.disabled = false;
     }
   }
+
+  // Arranque: abrir la sección que venga en la URL
+  initFromHash();
 </script>
 </body>
 </html>
