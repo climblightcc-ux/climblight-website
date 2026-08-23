@@ -57,12 +57,17 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;fon
 .search-input{padding:8px 16px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font-size:13px;outline:none;font-family:'DM Sans',sans-serif;margin-left:auto;width:220px}
 .search-input:focus{border-color:var(--navy)}
 
-.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
-table{width:100%;border-collapse:collapse}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:880px}
 th{padding:12px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--gray-l);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--off)}
-td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;white-space:nowrap}
+td[style*="max-width"]{overflow:hidden;text-overflow:ellipsis}
+.td-name,.td-meta{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(27,58,92,0.02)}
+th:first-child,td:first-child{position:sticky;left:0;z-index:2;background:var(--white);box-shadow:1px 0 0 var(--border)}
+th:first-child{background:var(--off);z-index:3}
+tr:hover td:first-child{background:#F4F7FB}
 .td-name{font-weight:600;color:var(--ink)}
 .td-meta{font-size:11px;color:var(--gray-l);margin-top:2px}
 
@@ -95,6 +100,7 @@ tr:hover td{background:rgba(27,58,92,0.02)}
 .loading-state{text-align:center;padding:80px 20px;color:var(--gray-l)}
 .spinner-lg{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:1024px){.topbar{padding:16px 18px}.view{padding:18px}.sidebar{width:172px}.search-input{width:160px}}
 
 .error-banner{background:var(--red-bg);border:1px solid #FECACA;border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:13px;color:var(--red);display:none}
 .error-banner.show{display:block}
