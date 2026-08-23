@@ -17,7 +17,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;display:flex;-webkit-font-smoothing:antialiased}
 
-.sidebar{width:230px;flex-shrink:0;background:var(--navy);color:white;display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.sidebar{width:200px;flex-shrink:0;background:var(--navy);color:white;display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
 .sb-logo{padding:26px 22px;border-bottom:1px solid rgba(255,255,255,0.1)}
 .sb-logo-text{font-family:'DM Serif Display',serif;font-size:19px}
 .sb-logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
@@ -145,38 +145,23 @@ tr:hover td{background:rgba(27,58,92,0.02)}
     <div class="sb-logo-sub">CRM · Panel admin</div>
   </div>
   <nav class="sb-nav">
-    <div class="sb-label">Creadores</div>
-    <button class="sb-item active" onclick="switchModule('creadores'); setFilter('todos', this)">
-      ◈ Todos
+    <div class="sb-label">Módulos</div>
+    <button class="sb-item active" onclick="switchModule('creadores', this)">
+      ◈ Creadores
       <span class="sb-badge" id="badge-total">0</span>
     </button>
-    <button class="sb-item" onclick="switchModule('creadores'); setFilter('nuevo', this)">● Nuevos</button>
-    <button class="sb-item" onclick="switchModule('creadores'); setFilter('contactado', this)">● Contactados</button>
-    <button class="sb-item" onclick="switchModule('creadores'); setFilter('activo', this)">● Activos</button>
-    <div class="sb-label" style="margin-top:18px">Marcas aliadas</div>
-    <button class="sb-item" onclick="switchModule('aliados'); setFilter('todos', this)">
-      ◈ Todas
+    <button class="sb-item" onclick="switchModule('aliados', this)">
+      ◈ Marcas aliadas
       <span class="sb-badge" id="badge-aliados">0</span>
     </button>
-    <button class="sb-item" onclick="switchModule('aliados'); setFilter('interesado', this)">★ Interesadas en planes</button>
-    <button class="sb-item" onclick="switchModule('aliados'); setFilter('Registrado', this)">● Registradas</button>
-    <button class="sb-item" onclick="switchModule('aliados'); setFilter('Activo', this)">● Activas</button>
-    <div class="sb-label" style="margin-top:18px">Blusym</div>
-    <button class="sb-item" onclick="switchModule('blusym'); setFilter('todos', this)">
-      ◈ Todas
+    <button class="sb-item" onclick="switchModule('blusym', this)">
+      ◈ Blusym
       <span class="sb-badge" id="badge-blusym">0</span>
     </button>
-    <button class="sb-item" onclick="switchModule('blusym'); setFilter('nuevo', this)">● Nuevas</button>
-    <button class="sb-item" onclick="switchModule('blusym'); setFilter('contactado', this)">● Contactadas</button>
-    <button class="sb-item" onclick="switchModule('blusym'); setFilter('activo', this)">● Activas</button>
-    <div class="sb-label" style="margin-top:18px">Interés en creadores</div>
-    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('todos', this)">
-      ◈ Todas
+    <button class="sb-item" onclick="switchModule('solicitudes', this)">
+      ◈ Solicitudes
       <span class="sb-badge" id="badge-solicitudes">0</span>
     </button>
-    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('nuevo', this)">● Nuevas</button>
-    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('contactado', this)">● Contactadas</button>
-    <button class="sb-item" onclick="switchModule('solicitudes'); setFilter('cerrado', this)">● Cerradas</button>
   </nav>
   <div class="sb-footer">
     <div class="sb-status">
@@ -199,27 +184,23 @@ tr:hover td{background:rgba(27,58,92,0.02)}
     <div class="error-banner" id="error-banner"></div>
 
     <div class="stats-row" id="stats-row">
-      <div class="stat-card"><div class="stat-num navy" id="stat-total">—</div><div class="stat-lbl" id="stat-lbl-1">Total creadores</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-nuevos">—</div><div class="stat-lbl" id="stat-lbl-2">Sin contactar</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-activos">—</div><div class="stat-lbl" id="stat-lbl-3">Activos</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-ciudades">—</div><div class="stat-lbl" id="stat-lbl-4">Ciudades</div></div>
+      <div class="stat-card" id="stat-card-1"><div class="stat-num navy" id="stat-total">—</div><div class="stat-lbl" id="stat-lbl-1">Total creadores</div></div>
+      <div class="stat-card" id="stat-card-2"><div class="stat-num" id="stat-nuevos">—</div><div class="stat-lbl" id="stat-lbl-2">Sin contactar</div></div>
+      <div class="stat-card" id="stat-card-3"><div class="stat-num" id="stat-activos">—</div><div class="stat-lbl" id="stat-lbl-3">Activos</div></div>
+      <div class="stat-card" id="stat-card-4"><div class="stat-num" id="stat-ciudades">—</div><div class="stat-lbl" id="stat-lbl-4">Ciudades</div></div>
       <div class="stat-card" id="stat-card-generado" style="display:none"><div class="stat-num navy" id="stat-generado">—</div><div class="stat-lbl">💰 Ganado por creadores</div></div>
     </div>
 
     <div class="filters" id="filters-creadores">
       <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
       <button class="filter-btn" onclick="setFilter('nuevo',this)">Nuevos</button>
-      <button class="filter-btn" onclick="setFilter('contactado',this)">Contactados</button>
       <button class="filter-btn" onclick="setFilter('activo',this)">Activos</button>
-      <button class="filter-btn" onclick="setFilter('rechazado',this)">Rechazados</button>
       <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTabla()" id="search">
     </div>
 
     <div class="filters" id="filters-aliados" style="display:none">
       <button class="filter-btn active" onclick="setFilter('todos',this)">Todas</button>
-      <button class="filter-btn" onclick="setFilter('interesado',this)">★ Interesadas en planes</button>
       <button class="filter-btn" onclick="setFilter('Registrado',this)">Registradas</button>
-      <button class="filter-btn" onclick="setFilter('Contactado',this)">Contactadas</button>
       <button class="filter-btn" onclick="setFilter('Activo',this)">Activas</button>
       <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaAliados()" id="search-aliados">
     </div>
@@ -227,7 +208,6 @@ tr:hover td{background:rgba(27,58,92,0.02)}
     <div class="filters" id="filters-blusym" style="display:none">
       <button class="filter-btn active" onclick="setFilter('todos',this)">Todas</button>
       <button class="filter-btn" onclick="setFilter('nuevo',this)">Nuevas</button>
-      <button class="filter-btn" onclick="setFilter('contactado',this)">Contactadas</button>
       <button class="filter-btn" onclick="setFilter('activo',this)">Activas</button>
       <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaBlusym()" id="search-blusym">
     </div>
@@ -235,7 +215,6 @@ tr:hover td{background:rgba(27,58,92,0.02)}
     <div class="filters" id="filters-solicitudes" style="display:none">
       <button class="filter-btn active" onclick="setFilter('todos',this)">Todas</button>
       <button class="filter-btn" onclick="setFilter('nuevo',this)">Nuevas</button>
-      <button class="filter-btn" onclick="setFilter('contactado',this)">Contactadas</button>
       <button class="filter-btn" onclick="setFilter('cerrado',this)">Cerradas</button>
       <input class="search-input" type="text" placeholder="Buscar…" oninput="renderTablaSolicitudes()" id="search-solicitudes">
     </div>
@@ -282,9 +261,16 @@ tr:hover td{background:rgba(27,58,92,0.02)}
   let currentLink = '';
   let currentModule = 'creadores';
 
-  function switchModule(mod) {
+  function switchModule(mod, sbBtn) {
     currentModule = mod;
     filtroActual = 'todos';
+    document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+    if (sbBtn) sbBtn.classList.add('active');
+    else {
+      const idx = { creadores: 0, aliados: 1, blusym: 2, solicitudes: 3 }[mod];
+      const items = document.querySelectorAll('.sb-item');
+      if (items[idx]) items[idx].classList.add('active');
+    }
     document.getElementById('topbar-title').textContent = mod === 'creadores' ? 'Creadores registrados' : mod === 'aliados' ? 'Marcas aliadas · Passie' : mod === 'blusym' ? 'Empresas creativas · Blusym' : 'Interés en creadores · Solicitudes';
     document.getElementById('filters-creadores').style.display = mod === 'creadores' ? 'flex' : 'none';
     document.getElementById('filters-aliados').style.display = mod === 'aliados' ? 'flex' : 'none';
@@ -294,6 +280,18 @@ tr:hover td{background:rgba(27,58,92,0.02)}
     const filtersId = mod === 'creadores' ? 'filters-creadores' : mod === 'aliados' ? 'filters-aliados' : mod === 'blusym' ? 'filters-blusym' : 'filters-solicitudes';
     const activeFilters = document.getElementById(filtersId);
     if (activeFilters) activeFilters.querySelector('.filter-btn').classList.add('active');
+
+    // Visibilidad de tarjetas por módulo (1=Total, 2=Nuevos, 3=Activos, 4=Ciudades)
+    const cardsVisibles = {
+      creadores:   [1, 4],
+      aliados:     [1, 3, 4],
+      blusym:      [1],
+      solicitudes: [1, 2, 3, 4]
+    }[mod] || [1, 2, 3, 4];
+    [1, 2, 3, 4].forEach(n => {
+      const el = document.getElementById('stat-card-' + n);
+      if (el) el.style.display = cardsVisibles.includes(n) ? 'block' : 'none';
+    });
     if (mod === 'creadores') {
       document.getElementById('stat-lbl-1').textContent = 'Total creadores';
       document.getElementById('stat-lbl-2').textContent = 'Sin contactar';
@@ -795,7 +793,7 @@ tr:hover td{background:rgba(27,58,92,0.02)}
 
   function setFilter(f, btn) {
     filtroActual = f;
-    document.querySelectorAll('.filter-btn,.sb-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
     if (currentModule === 'aliados') renderTablaAliados();
     else renderTabla();
