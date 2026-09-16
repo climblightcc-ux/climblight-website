@@ -99,26 +99,17 @@ textarea{resize:none;min-height:74px}
       </div>
 
       <div class="section-label">Resultados</div>
-      <div class="form-grid">
-        <div class="field">
-          <label>Vistas aproximadas</label>
-          <input type="number" id="f-vistas" placeholder="Ej. 4500" min="0">
-        </div>
-        <div class="field">
-          <label>Engagement (opcional)</label>
-          <input type="text" id="f-engagement" placeholder="Ej. 320 likes, 40 comentarios">
-        </div>
+      <div class="field">
+        <label>Vistas aproximadas</label>
+        <input type="number" id="f-vistas" placeholder="Ej. 4500" min="0">
       </div>
 
       <div class="section-label">Tu experiencia</div>
-      <div class="field">
+      <div class="field" style="margin-bottom:0">
         <label>¿Qué publicaste? (breve descripción)</label>
         <textarea id="f-descripcion" placeholder="Ej. Reel mostrando el menú de temporada..."></textarea>
       </div>
-      <div class="field" style="margin-bottom:0">
-        <label>¿Qué aprendiste de esta campaña?</label>
-        <textarea id="f-aprendizaje" placeholder="Ej. Los videos cortos funcionaron mejor que las fotos..."></textarea>
-      </div>
+
 
       <button class="btn-submit" id="btn-submit" onclick="submitReporte()">
         <div class="spinner"></div>
@@ -225,9 +216,7 @@ textarea{resize:none;min-height:74px}
           tipo,
           monto: tipo === 'pagada' ? parseFloat(monto) || 0 : 0,
           vistas: parseInt(document.getElementById('f-vistas').value) || null,
-          engagement: document.getElementById('f-engagement').value.trim() || null,
           descripcion: document.getElementById('f-descripcion').value.trim() || null,
-          aprendizaje: document.getElementById('f-aprendizaje').value.trim() || null,
           status: 'completada',
           fecha: new Date().toISOString(),
           token_usado: true
