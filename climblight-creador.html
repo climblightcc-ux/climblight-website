@@ -102,6 +102,39 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;fon
 .btn-outline{background:var(--white);color:var(--navy);border:1.5px solid var(--border)}
 .btn-outline:hover{border-color:var(--navy)}
 .btn-row{display:flex;gap:10px;margin-top:14px}
+/* ── Escalera de niveles ── */
+.nivel-tabla{width:100%;border-collapse:collapse;font-size:12.5px}
+.nivel-tabla th{text-align:left;font-size:10px;font-weight:700;color:var(--gray-l);letter-spacing:.08em;text-transform:uppercase;padding:0 10px 8px;border-bottom:1px solid var(--border)}
+.nivel-tabla th:last-child,.nivel-tabla td:last-child{text-align:right}
+.nivel-tabla td{padding:11px 10px;border-bottom:1px solid var(--border);color:var(--gray)}
+.nivel-tabla tr:last-child td{border-bottom:none}
+.nivel-tabla tr.actual td{background:var(--navy);color:rgba(255,255,255,.75);font-weight:600}
+.nivel-tabla tr.actual td:first-child{border-radius:10px 0 0 10px;color:#fff}
+.nivel-tabla tr.actual td:last-child{border-radius:0 10px 10px 0;color:#fff}
+.nivel-tabla tr.pasado td{color:var(--gray-l)}
+.tarifa-hero{background:var(--navy);border-radius:14px;padding:18px 20px;margin-bottom:16px;color:#fff}
+.tarifa-hero-lbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.tarifa-hero-num{font-family:'DM Serif Display',serif;font-size:34px;line-height:1.1;margin:2px 0 4px}
+.tarifa-hero-sub{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
+.prog-track{height:6px;background:rgba(255,255,255,.18);border-radius:100px;overflow:hidden;margin-top:12px}
+.prog-fill{height:100%;background:#fff;border-radius:100px;transition:width .9s cubic-bezier(.3,.2,.2,1)}
+/* ── Próximo logro ── */
+.next-logro{background:var(--navy-bg);border:1.5px solid rgba(27,58,92,.18);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;margin-bottom:18px}
+.next-logro-icon{width:42px;height:42px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.next-logro-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);opacity:.65}
+.next-logro-name{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:2px}
+.next-logro-desc{font-size:12px;color:var(--gray);line-height:1.5;margin-top:3px}
+/* ── Bloques de logros ── */
+.logro-bloque{font-size:11px;font-weight:700;color:var(--gray-l);letter-spacing:.06em;text-transform:uppercase;margin:18px 0 10px}
+.logro-bloque:first-of-type{margin-top:0}
+.logro-dep{font-size:10.5px;color:var(--navy);background:var(--navy-bg);border-radius:6px;padding:2px 7px;display:inline-block;margin-top:5px}
+/* ── Referidos ── */
+.ref-box{background:var(--off);border:1.5px dashed var(--border);border-radius:12px;padding:14px;margin-top:12px}
+.ref-link{font-family:monospace;font-size:11.5px;color:var(--navy);word-break:break-all;line-height:1.6}
+.ref-stats{display:flex;gap:10px;margin-bottom:12px}
+.ref-stat{flex:1;background:var(--navy-bg);border-radius:10px;padding:10px 12px;text-align:center}
+.ref-stat-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);line-height:1.1}
+.ref-stat-lbl{font-size:10.5px;color:var(--gray);margin-top:2px}
 </style>
 </head>
 <body>
@@ -125,14 +158,19 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;fon
 const SUPABASE_URL = 'https://aaqwtrhjzkxovuvaayft.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Km7IEk6RXzBeOqEY2FkUEw_TTgRHNyL';
 const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
-const params = new URLSearchParams(location.search);
-const token = params.get('t');
+const token = new URLSearchParams(location.search).get('t');
+
+const NIVELES = [
+  { nombre: 'Colaborador', min: 0,  max: 2,  pago: 'Producto',  pagoNum: 0,    etiqueta: 'Tarifa inicial'  },
+  { nombre: 'Nivel 1',     min: 3,  max: 5,  pago: '$500',      pagoNum: 500,  etiqueta: 'Tarifa inicial'  },
+  { nombre: 'Nivel 2',     min: 6,  max: 8,  pago: '$750',      pagoNum: 750,  etiqueta: 'Tarifa estándar' },
+  { nombre: 'Nivel 3',     min: 9,  max: 11, pago: '$1,000',    pagoNum: 1000, etiqueta: 'Tarifa estándar' },
+  { nombre: 'Embajador',   min: 12, max: 99, pago: '$1,500',    pagoNum: 1500, etiqueta: 'Tarifa premium'  }
+];
 
 document.getElementById('tb-fecha').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
 
-function showState(html) {
-  document.getElementById('app').innerHTML = '<div class="state">' + html + '</div>';
-}
+function showState(html) { document.getElementById('app').innerHTML = '<div class="state">' + html + '</div>'; }
 
 function tierFor(s) {
   if (s >= 90) return { key: 'elite', name: 'Elite Creator', next: null, at: null };
@@ -177,109 +215,167 @@ async function init() {
   const c = creators[0];
   const id = c.id;
 
-  const [ins, cams, sols, convs] = await Promise.all([
+  const [ins, cams, sols, convs, refs] = await Promise.all([
     fetchJson(SUPABASE_URL + '/rest/v1/Inscripciones?email=eq.' + encodeURIComponent(c.email || '') + '&status=eq.completado&select=nivel'),
     fetchJson(SUPABASE_URL + '/rest/v1/Campanas?creator_id=eq.' + id + '&status=eq.completada&select=marca,tipo,monto,fecha,calificacion_marca,repetiria_marca,comentario_marca'),
     fetchJson(SUPABASE_URL + '/rest/v1/solicitudes_creador?creator_id=eq.' + id + '&select=marca,tipo_empresa,presupuesto,mensaje,status,fecha&order=id.desc'),
-    fetchJson(SUPABASE_URL + '/rest/v1/Convocatorias?status=eq.abierta&select=*&order=id.desc')
+    fetchJson(SUPABASE_URL + '/rest/v1/Convocatorias?status=eq.abierta&select=*&order=id.desc'),
+    fetchJson(SUPABASE_URL + '/rest/v1/Creators?referido_por=eq.' + id + '&select=id,status')
   ]);
 
-  render(c, ins || [], cams || [], sols || [], convs || []);
+  let tokenRef = c.token_ref;
+  if (!tokenRef) {
+    tokenRef = 'r' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 8);
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/Creators?id=eq.' + id, {
+        method: 'PATCH',
+        headers: Object.assign({}, H, { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }),
+        body: JSON.stringify({ token_ref: tokenRef })
+      });
+    } catch (e) {}
+  }
+
+  render(c, ins || [], cams || [], sols || [], convs || [], refs || [], tokenRef);
 }
 
-function render(c, inscripciones, campanas, solicitudes, convocatorias) {
-  // ── Score ──
+function render(c, inscripciones, campanas, solicitudes, convocatorias, referidos, tokenRef) {
   const niveles = new Set(inscripciones.map(i => i.nivel));
   const nivelesCount = niveles.size;
   const pagadas = campanas.filter(x => (x.tipo || '').toLowerCase() === 'pagada');
   const marcas = new Set(campanas.map(x => (x.marca || '').toLowerCase().trim()).filter(Boolean));
   const calificaciones = campanas.filter(x => x.calificacion_marca != null);
+  const seguidores = parseInt(c.seguidores) || 0;
+  const meses = mesesActivo(c.fecha);
+  const refsActivos = referidos.filter(r => r.status === 'activo').length;
+  const refsPendientes = referidos.length - refsActivos;
 
   const pFormacion  = Math.min(nivelesCount / 6 * 40, 40);
-  const pAntiguedad = Math.min(mesesActivo(c.fecha), 20);
+  const pAntiguedad = Math.min(meses, 20);
   const pCampanas   = Math.min(pagadas.length * 2, 20);
-  const pAlcance    = Math.min((parseInt(c.seguidores) || 0) / 50000 * 10, 10);
+  const pAlcance    = Math.min(seguidores / 1000, 10);
   const pDiversidad = Math.min(marcas.size * 2, 10);
   const score = Math.min(Math.round(pFormacion + pAntiguedad + pCampanas + pAlcance + pDiversidad), 100);
   const tier = tierFor(score);
   const tierColors = { base: '#9CA3AF', activo: '#254E7A', top: '#1B3A5C', elite: '#B8862B' };
-
   const totalGanado = pagadas.reduce((s, x) => s + (parseFloat(x.monto) || 0), 0);
+  const mejorCalif = calificaciones.length ? Math.max(...calificaciones.map(x => x.calificacion_marca)) : 0;
 
-  // ── Guía al siguiente tier ──
+  const LOGROS = [
+    { g: 'Tu arranque', icon: '🌱', name: 'Primer paso', done: true, desc: 'Te uniste a la red Climblight', todo: '' },
+    { g: 'Tu arranque', icon: '📚', name: 'Formación iniciada', done: nivelesCount >= 1, desc: 'Completaste tu primer nivel', todo: 'Completa tu primer nivel de formación' },
+    { g: 'Tu arranque', icon: '✦', name: 'Perfil activo', done: c.status === 'activo', desc: 'Apareces en el catálogo público', todo: 'Climblight activa tu perfil tras revisarlo', dep: 'Lo activa Climblight' },
+    { g: 'Tu trabajo', icon: '💰', name: 'Primera campaña', done: pagadas.length >= 1, desc: 'Completaste tu primera campaña pagada', todo: 'Completa tu primera campaña pagada', dep: 'Necesita una marca' },
+    { g: 'Tu trabajo', icon: '🤝', name: 'Multi-marca', done: marcas.size >= 2, desc: 'Trabajaste con ' + marcas.size + ' marcas distintas', todo: 'Trabaja con 2 marcas distintas (llevas ' + marcas.size + ')', dep: 'Necesita una marca' },
+    { g: 'Tu trabajo', icon: '🔥', name: 'En racha', done: pagadas.length >= 3, desc: 'Llevas ' + pagadas.length + ' campañas pagadas', todo: 'Completa 3 campañas pagadas (llevas ' + pagadas.length + ')', dep: 'Necesita una marca' },
+    { g: 'Tu trabajo', icon: '⭐', name: 'Cinco estrellas', done: mejorCalif >= 5, desc: 'Una marca te calificó con 5 estrellas', todo: 'Recibe una calificación de 5 estrellas', dep: 'Lo califica la marca' },
+    { g: 'Tu trabajo', icon: '🏆', name: 'Profesional', done: pagadas.length >= 5, desc: 'Llevas ' + pagadas.length + ' campañas pagadas', todo: 'Completa 5 campañas pagadas (llevas ' + pagadas.length + ')', dep: 'Necesita una marca' },
+    { g: 'Tu crecimiento', icon: '🎓', name: 'Graduado Climblight', done: nivelesCount >= 6, desc: 'Completaste los 6 niveles', todo: 'Completa los 6 niveles (llevas ' + nivelesCount + ')' },
+    { g: 'Tu crecimiento', icon: '📈', name: 'Alcance 5K', done: seguidores >= 5000, desc: 'Superaste los 5,000 seguidores', todo: 'Llega a 5,000 seguidores (llevas ' + seguidores.toLocaleString('es-MX') + ')' },
+    { g: 'Tu crecimiento', icon: '⏳', name: 'Constante', done: meses >= 3 && pagadas.length >= 6, desc: 'Llevas ' + meses + ' meses y ' + pagadas.length + ' campañas', todo: '3 meses activo + 6 campañas (llevas ' + meses + ' meses, ' + pagadas.length + ' campañas)' },
+    { g: 'Tu crecimiento', icon: '🏅', name: 'Embajador', done: refsActivos >= 3, desc: 'Trajiste ' + refsActivos + ' creadores a la red', todo: 'Refiere 3 creadores que se activen (llevas ' + refsActivos + ')' }
+  ];
+
+  const desbloqueados = LOGROS.filter(l => l.done).length;
+  const nivelIdx = NIVELES.findIndex(n => desbloqueados >= n.min && desbloqueados <= n.max);
+  const nivelActual = NIVELES[nivelIdx];
+  const nivelSig = NIVELES[nivelIdx + 1] || null;
+  const faltanLogros = nivelSig ? nivelSig.min - desbloqueados : 0;
+  const progPct = nivelSig
+    ? Math.min((desbloqueados - nivelActual.min) / (nivelSig.min - nivelActual.min) * 100, 100)
+    : 100;
+
   let nextTierHtml = '';
   if (tier.next) {
     const faltan = tier.at - score;
     const tips = [];
-    if (pFormacion < 40) tips.push('completar niveles de formación (+' + Math.round(40 - pFormacion) + ' pts disponibles)');
+    if (pFormacion < 40) tips.push('completar niveles de formación');
     if (pCampanas < 20) tips.push('hacer campañas pagadas (+2 pts cada una)');
+    if (pAlcance < 10) tips.push('crecer tus seguidores (+1 pt por cada 1,000)');
     if (pDiversidad < 10) tips.push('trabajar con marcas nuevas (+2 pts por marca)');
     nextTierHtml = '<div class="next-tier">Te faltan <b>' + faltan + ' puntos</b> para ser <b>' + tier.next + '</b>. Tus caminos más rápidos: ' + tips.slice(0, 2).join(' y ') + '.</div>';
   } else {
     nextTierHtml = '<div class="next-tier">Estás en la cima: <b>Elite Creator</b>. Mantén tu ritmo de campañas para conservarlo.</div>';
   }
 
-  // ── Logros ──
-  const mejorCalif = calificaciones.length ? Math.max(...calificaciones.map(x => x.calificacion_marca)) : 0;
-  const logros = [
-    { icon: '🌱', name: 'Primer paso', desc: 'Te uniste a la red Climblight', done: true },
-    { icon: '📚', name: 'Formación iniciada', desc: nivelesCount >= 1 ? 'Completaste tu primer nivel' : 'Completa tu primer nivel de formación', done: nivelesCount >= 1 },
-    { icon: '🎓', name: 'Graduado Climblight', desc: nivelesCount >= 6 ? 'Completaste los 6 niveles' : 'Completa los 6 niveles (llevas ' + nivelesCount + ')', done: nivelesCount >= 6 },
-    { icon: '✦', name: 'Perfil activo', desc: c.status === 'activo' ? 'Apareces en el catálogo público' : 'Activa tu perfil para aparecer en el catálogo', done: c.status === 'activo' },
-    { icon: '💰', name: 'Primera campaña', desc: pagadas.length >= 1 ? 'Completaste tu primera campaña pagada' : 'Completa tu primera campaña pagada', done: pagadas.length >= 1 },
-    { icon: '🔥', name: 'En racha', desc: pagadas.length >= 3 ? 'Llevas ' + pagadas.length + ' campañas pagadas' : 'Completa 3 campañas pagadas (llevas ' + pagadas.length + ')', done: pagadas.length >= 3 },
-    { icon: '🤝', name: 'Multi-marca', desc: marcas.size >= 2 ? 'Has trabajado con ' + marcas.size + ' marcas distintas' : 'Trabaja con 2 marcas distintas (llevas ' + marcas.size + ')', done: marcas.size >= 2 },
-    { icon: '⭐', name: 'Cinco estrellas', desc: mejorCalif >= 5 ? 'Una marca te calificó con 5 estrellas' : 'Recibe una calificación de 5 estrellas', done: mejorCalif >= 5 }
-  ];
-  const desbloqueados = logros.filter(l => l.done).length;
+  const proximo = LOGROS.find(l => !l.done);
+  const proximoHtml = proximo
+    ? '<div class="next-logro"><div class="next-logro-icon">' + proximo.icon + '</div>' +
+      '<div><div class="next-logro-lbl">Tu siguiente logro</div>' +
+      '<div class="next-logro-name">' + proximo.name + '</div>' +
+      '<div class="next-logro-desc">' + proximo.todo + '</div>' +
+      (proximo.dep ? '<span class="logro-dep">' + proximo.dep + '</span>' : '') + '</div></div>'
+    : '<div class="next-logro"><div class="next-logro-icon">🏅</div><div><div class="next-logro-lbl">Completado</div>' +
+      '<div class="next-logro-name">Desbloqueaste los 12 logros</div>' +
+      '<div class="next-logro-desc">Estás en el máximo nivel de tarifa de Climblight.</div></div></div>';
 
-  const logrosHtml = logros.map(l =>
-    '<div class="logro ' + (l.done ? 'done' : 'locked') + '">' +
-      '<div class="logro-icon">' + (l.done ? l.icon : '🔒') + '</div>' +
-      '<div><div class="logro-name">' + l.name + '</div><div class="logro-desc">' + l.desc + '</div></div>' +
-    '</div>').join('');
+  let logrosHtml = '';
+  ['Tu arranque', 'Tu trabajo', 'Tu crecimiento'].forEach(function(bloque) {
+    logrosHtml += '<div class="logro-bloque">' + bloque + '</div><div class="logros-grid">';
+    LOGROS.filter(l => l.g === bloque).forEach(function(l) {
+      logrosHtml += '<div class="logro ' + (l.done ? 'done' : 'locked') + '">' +
+        '<div class="logro-icon">' + (l.done ? l.icon : '🔒') + '</div>' +
+        '<div><div class="logro-name">' + l.name + '</div>' +
+        '<div class="logro-desc">' + (l.done ? l.desc : l.todo) + '</div>' +
+        (!l.done && l.dep ? '<span class="logro-dep">' + l.dep + '</span>' : '') + '</div></div>';
+    });
+    logrosHtml += '</div>';
+  });
 
-  // ── Convocatorias ──
+  let tablaHtml = '<table class="nivel-tabla"><thead><tr><th>Nivel</th><th>Logros</th><th>Por campaña</th></tr></thead><tbody>';
+  NIVELES.forEach(function(n, i) {
+    const cls = i === nivelIdx ? 'actual' : (i < nivelIdx ? 'pasado' : '');
+    const rango = n.max >= 99 ? n.min + '+' : n.min + '–' + n.max;
+    tablaHtml += '<tr class="' + cls + '"><td>' + n.nombre + '</td><td>' + rango + '</td><td>' + n.pago + '</td></tr>';
+  });
+  tablaHtml += '</tbody></table>';
+
+  const tarifaHtml = '<div class="tarifa-hero">' +
+    '<div class="tarifa-hero-lbl">Tu tarifa por campaña</div>' +
+    '<div class="tarifa-hero-num">' + (nivelActual.pagoNum ? money(nivelActual.pagoNum) : 'Producto o servicio') + '</div>' +
+    '<div class="tarifa-hero-sub">' + nivelActual.nombre + ' · ' + desbloqueados + ' de 12 logros' +
+    (nivelSig ? ' · te ' + (faltanLogros === 1 ? 'falta 1 logro' : 'faltan ' + faltanLogros + ' logros') + ' para ' + nivelSig.nombre + ' (' + nivelSig.pago + ')' : '') + '</div>' +
+    '<div class="prog-track"><div class="prog-fill" data-pct="' + progPct + '" style="width:0"></div></div></div>';
+
+  const refLink = location.origin + '/index.html?ref=' + tokenRef + '#registro';
+  const refHtml = '<div class="ref-stats">' +
+      '<div class="ref-stat"><div class="ref-stat-num">' + refsActivos + '</div><div class="ref-stat-lbl">Activos</div></div>' +
+      '<div class="ref-stat"><div class="ref-stat-num">' + refsPendientes + '</div><div class="ref-stat-lbl">En revisión</div></div>' +
+      '<div class="ref-stat"><div class="ref-stat-num">' + Math.max(3 - refsActivos, 0) + '</div><div class="ref-stat-lbl">Para Embajador</div></div>' +
+    '</div>' +
+    '<div class="item-sub" style="margin-bottom:0">Comparte tu link — cuando 3 de tus invitados se activen, desbloqueas Embajador.</div>' +
+    '<div class="ref-box"><div class="ref-link" id="ref-link">' + refLink + '</div></div>' +
+    '<button class="btn btn-navy" style="margin-top:10px" onclick="copiarRef(\'' + refLink + '\', this)">🔗 Copiar mi link de invitación</button>';
+
   const convsHtml = convocatorias.length
     ? convocatorias.map(v =>
-        '<div class="item-row">' +
-          '<div><div class="item-main">' + (v.titulo || v.marca || 'Convocatoria') + '</div>' +
-          '<div class="item-sub">' + [v.marca, v.descripcion].filter(Boolean).join(' · ') + '</div></div>' +
-          '<div class="item-right">' + (v.pago ? '<div class="item-amount">' + v.pago + '</div>' : '') + '<span class="badge badge-green">Abierta</span></div>' +
-        '</div>').join('')
+        '<div class="item-row"><div><div class="item-main">' + (v.titulo || v.marca || 'Convocatoria') + '</div>' +
+        '<div class="item-sub">' + [v.marca, v.descripcion].filter(Boolean).join(' · ') + '</div></div>' +
+        '<div class="item-right">' + (v.pago ? '<div class="item-amount">' + v.pago + '</div>' : '') + '<span class="badge badge-green">Abierta</span></div></div>').join('')
     : '<div class="empty-mini">No hay convocatorias abiertas por ahora.<br>Cuando una marca lance una campaña, aparecerá aquí.</div>';
 
-  // ── Marcas interesadas ──
   const solsHtml = solicitudes.length
     ? solicitudes.map(s =>
-        '<div class="item-row">' +
-          '<div><div class="item-main">' + (s.marca || 'Marca') + '</div>' +
-          '<div class="item-sub">' + [s.tipo_empresa === 'blusym' ? '🎬 Empresa creativa' : '🏪 Negocio local', s.presupuesto].filter(Boolean).join(' · ') + '</div></div>' +
-          '<div class="item-right"><span class="badge badge-navy">Preguntó por ti</span></div>' +
-        '</div>').join('')
+        '<div class="item-row"><div><div class="item-main">' + (s.marca || 'Marca') + '</div>' +
+        '<div class="item-sub">' + [s.tipo_empresa === 'blusym' ? '🎬 Empresa creativa' : '🏪 Negocio local', s.presupuesto].filter(Boolean).join(' · ') + '</div></div>' +
+        '<div class="item-right"><span class="badge badge-navy">Preguntó por ti</span></div></div>').join('')
     : '<div class="empty-mini">Aún no hay marcas preguntando por ti.<br>Sube tu Score y completa tu formación para destacar en el catálogo.</div>';
 
-  // ── Ganancias ──
   const gananciasRows = pagadas.length
     ? pagadas.map(x => {
         const stars = x.calificacion_marca != null
           ? '<div class="stars">' + '★'.repeat(x.calificacion_marca) + '<span class="off">' + '★'.repeat(5 - x.calificacion_marca) + '</span></div>' +
             (x.comentario_marca ? '<div class="item-sub">"' + x.comentario_marca + '"</div>' : '')
           : '';
-        return '<div class="item-row">' +
-          '<div><div class="item-main">' + (x.marca || 'Campaña') + '</div>' + stars + '</div>' +
-          '<div class="item-right"><div class="item-amount">' + money(parseFloat(x.monto) || 0) + '</div></div>' +
-        '</div>';
+        return '<div class="item-row"><div><div class="item-main">' + (x.marca || 'Campaña') + '</div>' + stars + '</div>' +
+          '<div class="item-right"><div class="item-amount">' + money(parseFloat(x.monto) || 0) + '</div></div></div>';
       }).join('')
     : '<div class="empty-mini">Todavía no tienes campañas pagadas registradas.<br>Tu primera campaña aparecerá aquí.</div>';
 
-  // ── Formación ──
   const nivelesDots = [1,2,3,4,5,6].map(n => {
     const done = [...niveles].some(x => String(x).includes(n));
     return '<div class="nivel-dot' + (done ? ' done' : '') + '">' + n + '</div>';
   }).join('');
 
-  // ── Pintar todo ──
   document.getElementById('app').innerHTML =
     '<div class="card hero-card">' +
       '<div class="hero-photo">' + (c.foto_url ? '<img src="' + c.foto_url + '">' : initials(c.nombre)) + '</div>' +
@@ -289,10 +385,25 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias) {
     '</div>' +
 
     '<div class="card">' +
+      '<div class="card-label">Mi nivel y tarifa</div>' +
+      tarifaHtml + tablaHtml +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-label">Logros · ' + desbloqueados + ' de 12 desbloqueados</div>' +
+      proximoHtml + logrosHtml +
+    '</div>' +
+
+    '<div class="card">' +
+      '<div class="card-label">Invita creadores</div>' + refHtml +
+    '</div>' +
+
+    '<div class="card">' +
       '<div class="card-label">Mi Climblight Score</div>' +
       '<div class="score-flex">' + ring(score, 88, 8, tierColors[tier.key]) +
         '<div><div class="score-txt-tier">' + tier.name + '</div>' +
-        '<div class="score-txt-sub">' + score + ' de 100 puntos</div></div></div>' +
+        '<div class="score-txt-sub">' + score + ' de 100 puntos</div>' +
+        '<div class="item-sub" style="margin-top:4px">Lo que ven las marcas</div></div></div>' +
       '<div class="sb-rows">' +
         sbRow('Formación', pFormacion, 40) +
         sbRow('Antigüedad activa', pAntiguedad, 20) +
@@ -300,11 +411,6 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias) {
         sbRow('Alcance', pAlcance, 10) +
         sbRow('Diversidad de marcas', pDiversidad, 10) +
       '</div>' + nextTierHtml +
-    '</div>' +
-
-    '<div class="card">' +
-      '<div class="card-label">Logros · ' + desbloqueados + ' de ' + logros.length + ' desbloqueados</div>' +
-      '<div class="logros-grid">' + logrosHtml + '</div>' +
     '</div>' +
 
     '<div class="card">' +
@@ -331,19 +437,25 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias) {
     '<div class="card">' +
       '<div class="card-label">Mi gafete público</div>' +
       '<div class="item-sub" style="margin-bottom:4px">Tu tarjeta de presentación con Score verificado — compártela con cualquier marca.</div>' +
-      '<div class="btn-row">' +
-        '<a class="btn btn-navy" href="climblight-perfil.html?id=' + c.id + '">✦ Ver mi gafete</a>' +
-      '</div>' +
+      '<div class="btn-row"><a class="btn btn-navy" href="climblight-perfil.html?id=' + c.id + '">✦ Ver mi gafete</a></div>' +
     '</div>';
 
   requestAnimationFrame(() => {
-    document.querySelectorAll('.sb-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+    document.querySelectorAll('.sb-fill,.prog-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+  });
+}
+
+function copiarRef(link, btn) {
+  navigator.clipboard.writeText(link).then(function() {
+    const original = btn.textContent;
+    btn.textContent = '✓ Link copiado';
+    setTimeout(function() { btn.textContent = original; }, 2000);
   });
 }
 
 function sbRow(label, val, max) {
   return '<div><div class="sb-top"><span>' + label + '</span><span>' + Math.round(val) + ' / ' + max + '</span></div>' +
-    '<div class="sb-track"><div class="sb-fill" data-pct="' + Math.min(val / max * 100, 100) + '"></div></div></div>';
+    '<div class="sb-track"><div class="sb-fill" data-pct="' + Math.min(val / max * 100, 100) + '" style="width:0"></div></div></div>';
 }
 
 init();
