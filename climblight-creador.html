@@ -108,16 +108,25 @@ body{background:var(--off);color:var(--ink);font-family:'DM Sans',sans-serif;fon
 .nivel-tabla th:last-child,.nivel-tabla td:last-child{text-align:right}
 .nivel-tabla td{padding:11px 10px;border-bottom:1px solid var(--border);color:var(--gray)}
 .nivel-tabla tr:last-child td{border-bottom:none}
-.nivel-tabla tr.actual td{background:var(--navy);color:rgba(255,255,255,.75);font-weight:600}
-.nivel-tabla tr.actual td:first-child{border-radius:10px 0 0 10px;color:#fff}
-.nivel-tabla tr.actual td:last-child{border-radius:0 10px 10px 0;color:#fff}
-.nivel-tabla tr.pasado td{color:var(--gray-l)}
+.nivel-tabla tr.siguiente td{background:var(--navy-bg);color:var(--navy);font-weight:600;border-bottom:none}
+.nivel-tabla tr.siguiente td:first-child{border-radius:10px 0 0 10px;box-shadow:inset 2px 0 0 var(--navy)}
+.nivel-tabla tr.siguiente td:last-child{border-radius:0 10px 10px 0}
+.nivel-tabla tr.pasado td{color:var(--gray-l);opacity:.65}
 .tarifa-hero{background:var(--navy);border-radius:14px;padding:18px 20px;margin-bottom:16px;color:#fff}
-.tarifa-hero-lbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
-.tarifa-hero-num{font-family:'DM Serif Display',serif;font-size:34px;line-height:1.1;margin:2px 0 4px}
-.tarifa-hero-sub{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
-.prog-track{height:6px;background:rgba(255,255,255,.18);border-radius:100px;overflow:hidden;margin-top:12px}
+.tarifa-hero-lbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.etapa-nombre{font-size:19px;font-weight:600;color:#fff;margin-top:4px}
+.etapa-desc{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px;line-height:1.5}
+.hero-sep{height:1px;background:rgba(255,255,255,.15);margin:16px 0}
+.meta-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-top:2px}
+.tarifa-hero-num{font-family:'DM Serif Display',serif;font-size:36px;line-height:1.1;color:#fff}
+.meta-sub{font-size:12.5px;color:rgba(255,255,255,.7)}
+.prog-track{height:6px;background:rgba(255,255,255,.18);border-radius:100px;overflow:hidden;margin-top:14px}
 .prog-fill{height:100%;background:#fff;border-radius:100px;transition:width .9s cubic-bezier(.3,.2,.2,1)}
+.prog-texto{font-size:12.5px;color:rgba(255,255,255,.8);margin-top:8px}
+.prog-texto b{color:#fff}
+.hero-next{background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;margin-top:13px}
+.hero-next-lbl{font-size:11px;color:rgba(255,255,255,.55)}
+.hero-next-txt{font-size:12.5px;color:#fff;margin-top:2px;line-height:1.5}
 /* ── Próximo logro ── */
 .next-logro{background:var(--navy-bg);border:1.5px solid rgba(27,58,92,.18);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start;margin-bottom:18px}
 .next-logro-icon{width:42px;height:42px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
@@ -161,11 +170,11 @@ const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
 const token = new URLSearchParams(location.search).get('t');
 
 const NIVELES = [
-  { nombre: 'Colaborador', min: 0,  max: 2,  pago: 'Producto',  pagoNum: 0,    etiqueta: 'Tarifa inicial'  },
-  { nombre: 'Nivel 1',     min: 3,  max: 5,  pago: '$500',      pagoNum: 500,  etiqueta: 'Tarifa inicial'  },
-  { nombre: 'Nivel 2',     min: 6,  max: 8,  pago: '$750',      pagoNum: 750,  etiqueta: 'Tarifa estándar' },
-  { nombre: 'Nivel 3',     min: 9,  max: 11, pago: '$1,000',    pagoNum: 1000, etiqueta: 'Tarifa estándar' },
-  { nombre: 'Embajador',   min: 12, max: 99, pago: '$1,500',    pagoNum: 1500, etiqueta: 'Tarifa premium'  }
+  { nombre: 'Colaborador', min: 0,  max: 2,  pago: 'Producto', pagoNum: 0,    etiqueta: 'Tarifa inicial',  desc: 'Colaboras a cambio de producto o servicio' },
+  { nombre: 'Dreamer',     min: 3,  max: 5,  pago: '$500',     pagoNum: 500,  etiqueta: 'Tarifa inicial',  desc: 'Empiezas a cobrar por tu trabajo' },
+  { nombre: 'Creador',     min: 6,  max: 8,  pago: '$750',     pagoNum: 750,  etiqueta: 'Tarifa estándar', desc: 'Ya eres creador con historial comprobado' },
+  { nombre: 'Creador Pro', min: 9,  max: 11, pago: '$1,000',   pagoNum: 1000, etiqueta: 'Tarifa estándar', desc: 'Formación completa y validado por marcas' },
+  { nombre: 'Embajador',   min: 12, max: 99, pago: '$1,500',   pagoNum: 1500, etiqueta: 'Tarifa premium',  desc: 'Top de la red — haces crecer Climblight' }
 ];
 
 document.getElementById('tb-fecha').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -284,6 +293,8 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias, referido
     ? Math.min((desbloqueados - nivelActual.min) / (nivelSig.min - nivelActual.min) * 100, 100)
     : 100;
 
+  const proximo = LOGROS.find(l => !l.done);
+
   let nextTierHtml = '';
   if (tier.next) {
     const faltan = tier.at - score;
@@ -297,7 +308,6 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias, referido
     nextTierHtml = '<div class="next-tier">Estás en la cima: <b>Elite Creator</b>. Mantén tu ritmo de campañas para conservarlo.</div>';
   }
 
-  const proximo = LOGROS.find(l => !l.done);
   const proximoHtml = proximo
     ? '<div class="next-logro"><div class="next-logro-icon">' + proximo.icon + '</div>' +
       '<div><div class="next-logro-lbl">Tu siguiente logro</div>' +
@@ -323,18 +333,37 @@ function render(c, inscripciones, campanas, solicitudes, convocatorias, referido
 
   let tablaHtml = '<table class="nivel-tabla"><thead><tr><th>Nivel</th><th>Logros</th><th>Por campaña</th></tr></thead><tbody>';
   NIVELES.forEach(function(n, i) {
-    const cls = i === nivelIdx ? 'actual' : (i < nivelIdx ? 'pasado' : '');
-    const rango = n.max >= 99 ? n.min + '+' : n.min + '–' + n.max;
-    tablaHtml += '<tr class="' + cls + '"><td>' + n.nombre + '</td><td>' + rango + '</td><td>' + n.pago + '</td></tr>';
+    let cls = '';
+    if (i <= nivelIdx) cls = 'pasado';
+    if (i === nivelIdx + 1) cls = 'siguiente';
+    const rango = n.min === 0 ? 'Hasta ' + n.max : (n.max >= 99 ? 'Los ' + n.min : 'Desde ' + n.min);
+    const check = i <= nivelIdx ? '✓ ' : '';
+    tablaHtml += '<tr class="' + cls + '"><td>' + check + n.nombre + '</td><td>' + rango + '</td><td>' + n.pago + '</td></tr>';
   });
   tablaHtml += '</tbody></table>';
 
-  const tarifaHtml = '<div class="tarifa-hero">' +
-    '<div class="tarifa-hero-lbl">Tu tarifa por campaña</div>' +
-    '<div class="tarifa-hero-num">' + (nivelActual.pagoNum ? money(nivelActual.pagoNum) : 'Producto o servicio') + '</div>' +
-    '<div class="tarifa-hero-sub">' + nivelActual.nombre + ' · ' + desbloqueados + ' de 12 logros' +
-    (nivelSig ? ' · te ' + (faltanLogros === 1 ? 'falta 1 logro' : 'faltan ' + faltanLogros + ' logros') + ' para ' + nivelSig.nombre + ' (' + nivelSig.pago + ')' : '') + '</div>' +
-    '<div class="prog-track"><div class="prog-fill" data-pct="' + progPct + '" style="width:0"></div></div></div>';
+  let tarifaHtml = '<div class="tarifa-hero">' +
+    '<div class="tarifa-hero-lbl">Tu etapa actual</div>' +
+    '<div class="etapa-nombre">' + nivelActual.nombre + '</div>' +
+    '<div class="etapa-desc">' + (nivelActual.pagoNum ? 'Cobras ' + money(nivelActual.pagoNum) + ' por campaña' : nivelActual.desc) + '</div>';
+
+  if (nivelSig) {
+    tarifaHtml += '<div class="hero-sep"></div>' +
+      '<div class="tarifa-hero-lbl">Tu meta</div>' +
+      '<div class="meta-row"><span class="tarifa-hero-num">' + nivelSig.pago + '</span>' +
+      '<span class="meta-sub">por campaña · ' + nivelSig.nombre + '</span></div>' +
+      '<div class="prog-track"><div class="prog-fill" data-pct="' + progPct + '" style="width:0"></div></div>' +
+      '<div class="prog-texto">' + (desbloqueados - nivelActual.min) + ' de ' + (nivelSig.min - nivelActual.min) + ' logros · <b>te ' +
+      (faltanLogros === 1 ? 'falta 1' : 'faltan ' + faltanLogros) + '</b></div>' +
+      (proximo ? '<div class="hero-next"><div class="hero-next-lbl">Lo que te falta</div>' +
+        '<div class="hero-next-txt">' + proximo.icon + ' ' + proximo.name + ' — ' + proximo.todo + '</div></div>' : '');
+  } else {
+    tarifaHtml += '<div class="hero-sep"></div>' +
+      '<div class="tarifa-hero-lbl">Tu tarifa</div>' +
+      '<div class="meta-row"><span class="tarifa-hero-num">' + nivelActual.pago + '</span>' +
+      '<span class="meta-sub">por campaña · nivel máximo</span></div>';
+  }
+  tarifaHtml += '</div>';
 
   const refLink = location.origin + '/index.html?ref=' + tokenRef + '#registro';
   const refHtml = '<div class="ref-stats">' +
